@@ -15,7 +15,7 @@ jGrants には市区町村の独自制度がほとんど登録されていない
     python3 municipal.py              # 全自治体
     python3 municipal.py 久留米市 都城市   # 指定した自治体だけ
 """
-import gzip, html, json, os, re, sys, threading, time
+import datetime, gzip, html, json, os, re, sys, threading, time
 import urllib.error, urllib.parse, urllib.request
 
 CACHE_LOCK = threading.Lock()
@@ -179,19 +179,88 @@ def page_title(h):
     return max(parts, key=len)
 
 
-AMOUNT = re.compile(r"(?:上限|限度額|補助上限|助成上限|最大)[^。\n]{0,14}?"
-                    r"(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*(億円|万円|千円|円)")
-RATE = re.compile(r"(?:補助率|助成率)[^。\n]{0,10}?"
-                  r"(\d{1,2}\s*/\s*\d{1,2}|\d{1,2}分の\d{1,2}|[０-９]{1,2}分の[０-９]{1,2}|\d{1,3}\s*[%％]|定額)")
-DEADLINE = re.compile(r"(令和\s*[0-9０-９元]{1,2}\s*年\s*[0-9０-９]{1,2}\s*月\s*[0-9０-９]{1,2}\s*日)"
-                      r"[^。\n]{0,12}?(?:まで|必着|締切|締め切り|消印)")
+Z2H = str.maketrans("０１２３４５６７８９．，", "0123456789.,")
+UNIT = {"億円": 100_000_000, "万円": 10_000, "千円": 1_000, "円": 1}
+
+# 金額：キーワードが前に来る書き方と、後ろに来る書き方の両方を拾う
+A_PRE = re.compile(r"(?:上限|限度額|補助上限|助成上限|補助額|助成額|交付額|給付額|奨励金額|"
+                   r"補助金額|助成金額|支給額|最大)[^。\n]{0,16}?"
+                   r"([0-9０-９][0-9０-９,，]*(?:\.[0-9]+)?)\s*(億円|万円|千円|円)")
+A_POST = re.compile(r"([0-9０-９][0-9０-９,，]*(?:\.[0-9]+)?)\s*(億円|万円|千円|円)"
+                    r"[^。\n]{0,8}?(?:を上限|が上限|を限度|以内|まで)")
+# 「100万円以上の経費」のような下限・条件は金額として採らない
+A_BAD = re.compile(r"(?:以上|超|未満|収入|売上|所得|資本金|人口|世帯)")
+
+RATE = re.compile(r"(?:補助率|助成率|補助割合|交付率)[^。\n]{0,12}?"
+                  r"([0-9０-９]{1,2}\s*/\s*[0-9０-９]{1,2}|[0-9０-９]{1,3}分の[0-9０-９]{1,3}|"
+                  r"[0-9０-９]{1,3}\s*[%％]|定額|全額)")
+RATE2 = re.compile(r"(?:経費の|費用の|額の|対象経費に)\s*"
+                   r"([0-9０-９]{1,3}分の[0-9０-９]{1,3}|[0-9０-９]{1,2}\s*/\s*[0-9０-９]{1,2}|"
+                   r"[0-9０-９]{1,3}\s*[%％])")
+RATE3 = re.compile(r"([0-9０-９]{1,3}分の[0-9０-９]{1,3}|[0-9０-９]{1,2}\s*/\s*[0-9０-９]{1,2}|"
+                   r"[0-9０-９]{1,3}\s*[%％])\s*(?:以内|相当|を補助|を助成|を交付)")
+
+_D_WA = r"令和\s*([0-9０-９元]{1,2})\s*年\s*([0-9０-９]{1,2})\s*月\s*([0-9０-９]{1,2})\s*日"
+_D_AD = r"(20[0-9０-９]{2})\s*年\s*([0-9０-９]{1,2})\s*月\s*([0-9０-９]{1,2})\s*日"
+_AFTER = r"[^。\n]{0,16}?(?:まで|必着|締切|締め切|消印|期限)"
+_BEFORE = r"(?:締切|締め切|申請期限|提出期限|受付期限|応募期限|期限|まで)[^。\n]{0,12}?"
+DEAD_PATS = [(re.compile(_D_WA + _AFTER), True), (re.compile(_D_AD + _AFTER), False),
+             (re.compile(_BEFORE + "(?:" + _D_WA + ")"), True),
+             (re.compile(_BEFORE + "(?:" + _D_AD + ")"), False)]
+# 「令和8年4月1日から令和9年3月31日まで」は後ろの日付が締切
+DEAD_RANGE = re.compile(_D_WA + r"[^。\n]{0,4}?から[^。\n]{0,4}?" + _D_WA)
+
 CONTACT = re.compile(r"(?:お問い合わせ|問い合わせ|問合せ|担当)[^。\n]{0,6}?"
                      r"([一-龥ぁ-んァ-ヶ]{2,12}(?:課|室|部|センター|局|係))")
 
 
 def to_yen(num, unit):
-    v = float(num.replace(",", ""))
-    return int(v * {"億円": 100_000_000, "万円": 10_000, "千円": 1_000, "円": 1}[unit])
+    try:
+        v = float(str(num).translate(Z2H).replace(",", ""))
+    except ValueError:
+        return 0
+    return int(v * UNIT[unit])
+
+
+def find_amount(t):
+    """キーワードに紐づく最初の金額を採る。最大値を採ると対象経費の下限を拾ってしまう。"""
+    m = A_PRE.search(t)
+    if m:
+        v = to_yen(m.group(1), m.group(2))
+        if v: return v
+    for m in A_POST.finditer(t):
+        if A_BAD.search(t[max(0, m.start() - 18):m.start()]): continue
+        v = to_yen(m.group(1), m.group(2))
+        if v: return v
+    return 0
+
+
+def find_rate(t):
+    m = RATE.search(t) or RATE2.search(t) or RATE3.search(t)
+    return re.sub(r"\s+", "", m.group(1).translate(Z2H)) if m else ""
+
+
+def _mk_date(y, mo, da, wareki):
+    y = str(y).translate(Z2H)
+    y = 2018 + (1 if y == "元" else int(y)) if wareki else int(y)
+    try:
+        d = datetime.date(y, int(str(mo).translate(Z2H)), int(str(da).translate(Z2H)))
+    except ValueError:
+        return ""
+    return f"令和{d.year - 2018}年{d.month}月{d.day}日"
+
+
+def find_deadline(t):
+    m = DEAD_RANGE.search(t)
+    if m:
+        s2 = _mk_date(m.group(4), m.group(5), m.group(6), True)
+        if s2: return s2
+    for pat, wareki in DEAD_PATS:
+        m = pat.search(t)
+        if m:
+            s2 = _mk_date(m.group(1), m.group(2), m.group(3), wareki)
+            if s2: return s2
+    return ""
 
 
 HUB_TITLES = {"支援制度", "補助金", "助成金", "補助金・助成金", "各種支援制度", "支援策",
@@ -225,16 +294,9 @@ def extract(url, h):
     body = text_of(h)
     rec = {"url": url, "title": page_title(h), "max": 0, "rate": "", "deadline": "", "dept": "",
            "excerpt": ""}
-    m = AMOUNT.search(body)
-    if m:
-        try: rec["max"] = to_yen(m.group(1), m.group(2))
-        except Exception: pass
-    m = RATE.search(body)
-    if m: rec["rate"] = m.group(1).replace(" ", "")
-    m = DEADLINE.search(body)
-    if m:
-        z = re.sub(r"\s+", "", m.group(1))
-        rec["deadline"] = z.translate(str.maketrans("０１２３４５６７８９", "0123456789"))
+    rec["max"] = find_amount(body)
+    rec["rate"] = find_rate(body)
+    rec["deadline"] = find_deadline(body)
     m = CONTACT.search(body)
     if m: rec["dept"] = m.group(1)
     # 事実の要約だけを短く保持する（本文の複製はしない）
@@ -279,10 +341,13 @@ def harvest(pref, name, base, cache):
                 if urllib.parse.urlparse(u2).netloc == host:
                     seeds.append(u2)
     seeds = list(dict.fromkeys(seeds))
-    whole_site = False
+    # 入口が少ない小規模自治体は、事業者向けの区画が浅く名前も揃っていない。
+    # 2件以下ならサイト全体を対象にする（タイトルで絞るので精度は保てる）。
+    whole_site = len(seeds) < 3
     if not seeds:
-        # 事業者向けの入口が見つからないサイトは、トップから全体をたどる
-        seeds, whole_site = [start], True
+        seeds = [start]
+    if whole_site and start not in seeds:
+        seeds = [start] + seeds
     # 巡回はシード配下に限定する。これをしないと住宅・福祉など無関係な区画へ流れ出す
     prefixes = []
     for u in seeds:
