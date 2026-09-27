@@ -183,9 +183,9 @@ MARK = ('<svg class="mark" viewBox="0 0 32 32" aria-hidden="true">'
         '<rect x="1" y="26.5" width="6" height="4.5" fill="#6FBCF0"/>'
         '<rect x="9" y="26.5" width="8" height="4.5" fill="#1A6DB5" opacity=".4"/></svg>')
 
-NAV = [("補助金を探す","search/"),("県から探す","#pref"),("目的から探す","purpose/"),
-       ("市区町村","muni/"),("対象者から","audience/"),("制度ガイド","guide/"),
-       ("許認可","permit/"),("締切アラート","alerts/"),("AI相談","ai/"),("申請支援","experts/")]
+# ヘッダーは6項目まで。残り（目的別・対象者別・許認可）はフッターと各ページから辿れる
+NAV = [("補助金を探す","search/"),("市区町村","muni/"),("制度ガイド","guide/"),
+       ("締切アラート","alerts/"),("AI相談","ai/"),("申請支援","experts/")]
 
 def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False, schema="", with_ai=True):
     canon = (BASE_URL + U(path)) if BASE_URL else ""
@@ -379,16 +379,17 @@ def build_index():
 <div class="hero">{HERO_ART}<div class="wrap">
   <div>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
-    <h1 class="hero-t"><span class="sm">福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄</span>
-      九州の会社が使える<br>補助金だけを、<span style="white-space:nowrap"><span class="u">まとめて</span>。</span></h1>
-    <div class="hero-offer">
-      <div class="ho-l"><span>申請支援は</span><b>着手金0円・完全成果報酬</b></div>
-      <div class="ho-r"><em>5<i>%〜</i></em><small>最低10万円〜</small></div>
-    </div>
-    <div class="hero-chips">
-      <span><i></i>相談・制度選びは無料</span>
-      <span><i></i>不採択なら費用0円</span>
-      <span><i></i>九州・沖縄の士業が伴走</span>
+    <h1 class="hero-t">その補助金、<br><span style="white-space:nowrap"><span class="u">うちも使えますか</span>。</span></h1>
+    <div class="hero-answer">
+      <div class="hero-offer">
+        <div class="ho-l"><span>申請支援は</span><b>着手金0円・完全成果報酬</b></div>
+        <div class="ho-r"><em>5<i>%〜</i></em><small>最低10万円〜</small></div>
+      </div>
+      <div class="hero-chips">
+        <span><i></i>相談・制度選びは無料</span>
+        <span><i></i>不採択なら費用0円</span>
+        <span><i></i>九州・沖縄の士業が伴走</span>
+      </div>
     </div>
     <div class="hero-cta">
       <a class="btn" href="{U('search/')}">{N_OPEN}件の受付中制度を見る</a>
@@ -1242,13 +1243,13 @@ def kmap(active=None):
            f'<path fill="{PREF_FILL["okinawa"]}" d="{KMAP["okinawa"]["path"]}"/></a>'
            f'<g class="lbl"><text class="lab" x="64" y="32" text-anchor="middle">沖縄</text>'
            f'<text class="num" x="64" y="45" text-anchor="middle">受付中 {o}件</text></g>')
-    return (f'<svg class="kmap" viewBox="0 0 322 396" role="img" '
+    return (f'<svg class="kmap" viewBox="0 0 322 388" role="img" '
             f'aria-label="九州・沖縄8県の補助金マップ">'
             f'<g transform="translate(21,6)">{"".join(shapes)}'
             f'<g class="lbl">{"".join(labels)}</g></g>'
             f'<g transform="translate(3,258) scale(.86)">'
             f'<rect class="inset" x="0" y="0" width="130" height="96" rx="4"/>{oki}</g>'
-            f'<text class="cap" x="318" y="392" text-anchor="end">KYUSHU &amp; OKINAWA</text></svg>')
+            f'</svg>')
 
 def pref_thumb(slug):
     return (f'<svg class="th" viewBox="0 0 100 100" aria-hidden="true">'
