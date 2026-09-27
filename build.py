@@ -306,6 +306,7 @@ def sec_h(en, h2, p="", more=None):
 SEIKA = f"""<section class="seika"><div class="wrap">
   <div class="badge-row">
     <span class="bg1"><i></i>着手金・相談料 0円</span>
+    <span class="bg1" style="background:rgba(255,255,255,.16);color:#fff">成功報酬 5%〜</span>
     <span class="bg2">SUCCESS FEE ONLY</span>
   </div>
   <h2>採択されなければ、<br><em>1円もいただきません。</em></h2>
@@ -317,20 +318,22 @@ SEIKA = f"""<section class="seika"><div class="wrap">
       <div class="k">着手金・相談料<br>制度選びと要件確認まで無料です</div></div>
     <div><div class="n">0<small>円</small></div>
       <div class="k">不採択だった場合<br>報酬は一切発生しません</div></div>
-    <div><div class="n">成功報酬<small>のみ</small></div>
-      <div class="k">採択が決まってからのお支払い<br>料率は着手前に書面で提示します</div></div>
+    <div><div class="n">5<small>%〜</small></div>
+      <div class="k">採択された補助金額に対する成功報酬<br>最低報酬10万円〜／着手前に書面で提示します</div></div>
   </div>
   <div class="cta-row">
     <a class="btn" href="{U('contact/')}">無料で相談する</a>
     <a class="btn ghost" href="{U('experts/')}">支援の中身を見る</a>
   </div>
-  <p class="fine">※ 補助金は後払いのため、採択後も設備代の立替が必要です。つなぎ資金のご相談も承ります。<br>
+  <p class="fine">※ 成功報酬は採択された補助金額の5%〜（最低報酬10万円〜）。料率は制度・補助額・作業範囲により変わります。<br>
+  ※ 例：補助金500万円が採択され、料率5%の場合の成功報酬は25万円です。<br>
+  ※ 補助金は後払いのため、採択後も設備代の立替が必要です。つなぎ資金のご相談も承ります。<br>
   ※ 一部の制度や、申請期限が極端に迫っている案件はお引き受けできない場合があります。</p>
 </div></section>"""
 
 CTA = f"""<div class="cta"><div class="wrap narrow">
 <h2>制度は見つかった。次は「通る申請書」をつくる番。</h2>
-<p>九州・沖縄の行政書士・中小企業診断士・社労士・税理士と連携し、要件確認から事業計画書の作成・実績報告までを支援します。<strong style="color:#fff">着手金0円の完全成果報酬</strong>なので、まずは無料の相談枠から。</p>
+<p>九州・沖縄の行政書士・中小企業診断士・社労士・税理士と連携し、要件確認から事業計画書の作成・実績報告までを支援します。<strong style="color:#fff">着手金0円・完全成果報酬5%〜</strong>なので、まずは無料の相談枠から。</p>
 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
 <a class="btn" href="{U('contact/')}">無料で相談する</a>
 <a class="btn ghost" href="{U('experts/')}">完全成果報酬の中身を見る</a>
@@ -375,7 +378,7 @@ def build_index():
     body = f"""
 <div class="hero">{HERO_ART}<div class="wrap">
   <div>
-    <span class="hero-badge"><i></i>申請支援は着手金0円・完全成果報酬</span>
+    <span class="hero-badge"><i></i>申請支援は着手金0円・完全成果報酬 5%〜</span>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
     <h1 class="hero-t"><span class="sm">福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄</span>
       九州の会社が使える<br>補助金だけを、<span style="white-space:nowrap"><span class="u">まとめて</span>。</span></h1>
@@ -456,7 +459,7 @@ def build_index():
 </div></section>
 
 <section class="alt"><div class="wrap">
-  {sec_h("EXPERTS","九州・沖縄の専門家が、申請まで伴走します","採択の可否を分けるのは制度選びより事業計画の書き方です。地場の士業と連携し、着手金0円の完全成果報酬で支援しています。",("申請支援を見る",U("experts/")))}
+  {sec_h("EXPERTS","九州・沖縄の専門家が、申請まで伴走します","採択の可否を分けるのは制度選びより事業計画の書き方です。地場の士業と連携し、着手金0円・成功報酬5%〜で支援しています。",("申請支援を見る",U("experts/")))}
   <div class="experts">{EXPERT_TILES}</div>
 </div></section>
 {CTA}
@@ -468,7 +471,7 @@ def build_index():
     }, ensure_ascii=False) + '</script>')
     write("index.html", layout(
         f"九州・沖縄の補助金／助成金を探す【{TODAY.year}年最新・{N_OPEN}件受付中】｜{SITE_NAME}",
-        SITE_DESC + f"現在{N_OPEN}件が受付中（{TODAY_JP}時点）。申請支援は着手金0円の完全成果報酬。",
+        SITE_DESC + f"現在{N_OPEN}件が受付中（{TODAY_JP}時点）。申請支援は着手金0円・完全成果報酬5%〜。",
         body, "", data_js=True, schema=schema))
 
 # ---------------------------------------------------------------- 専門家タイル
@@ -952,14 +955,15 @@ def build_static():
             ("税理士","沖縄県","沖縄振興特措法まわりの優遇と観光業の資金繰り。"),
         ])
     page("experts","申請支援（着手金0円・完全成果報酬）",
-         "九州・沖縄の補助金申請を着手金0円の完全成果報酬で支援します。採択されなければ費用は発生しません。",
+         "九州・沖縄の補助金申請を着手金0円の完全成果報酬で支援します。成功報酬は採択された補助金額の5%〜（最低10万円〜）。採択されなければ費用は発生しません。",
          f"""
 <div class="seika" style="margin:0 -9999px 40px;padding:44px 9999px 42px">
   <div class="badge-row"><span class="bg1"><i></i>着手金・相談料 0円</span>
+  <span class="bg1" style="background:rgba(255,255,255,.16);color:#fff">成功報酬 5%〜</span>
   <span class="bg2">SUCCESS FEE ONLY</span></div>
   <h2 style="font-size:clamp(24px,4vw,40px)">採択されなければ、<em>1円もいただきません。</em></h2>
   <p class="lead" style="margin-bottom:0">制度選びから事業計画の作成、採択後の実績報告まで。
-  費用が発生するのは<b>採択が決まってから</b>だけです。</p>
+  費用が発生するのは<b>採択が決まってから</b>だけで、<b>採択額の5%〜</b>（最低報酬10万円〜）です。</p>
 </div>
 
 <p>補助金で結果を分けるのは、制度選びよりも<strong>事業計画の書き方と、期日の管理</strong>です。
@@ -971,11 +975,21 @@ def build_static():
 <tr><td>初回相談・制度選び・要件確認</td><td><strong>0円</strong></td></tr>
 <tr><td>事業計画書の作成・申請代行</td><td><strong>0円</strong>（着手金なし）</td></tr>
 <tr><td>不採択だった場合</td><td><strong>0円</strong></td></tr>
-<tr><td>採択された場合</td><td>成功報酬のみ（料率は着手前に書面で提示）</td></tr>
+<tr><td>採択された場合</td><td><strong>採択された補助金額の5%〜</strong>（最低報酬10万円〜）</td></tr>
 <tr><td>交付申請・実績報告の代行</td><td>ご希望に応じて別途お見積り</td></tr></table>
-<div class="note">成功報酬の料率は、制度の種類・補助額・作業範囲によって変わります。
-<strong>着手前にかならず書面でお見積りを提示し、ご納得いただいてから着手</strong>します。
+<div class="note"><strong>成功報酬は採択された補助金額の5%〜、最低報酬10万円〜です。</strong>
+料率は制度の種類・補助額・作業範囲によって変わります。
+着手前にかならず書面でお見積りを提示し、ご納得いただいてから着手します。
 見積り後にお断りいただいても費用は発生しません。</div>
+
+<h3>料金の目安</h3>
+<table><tr><th>採択された補助金額</th><th>成功報酬（料率5%の場合）</th></tr>
+<tr><td>200万円</td><td>10万円</td></tr>
+<tr><td>500万円</td><td>25万円</td></tr>
+<tr><td>1,000万円</td><td>50万円</td></tr>
+<tr><td>3,000万円</td><td>150万円</td></tr></table>
+<p style="font-size:13px;color:var(--ink-55)">※ 補助金額が少額の場合も、最低報酬は10万円〜となります。
+※ 交付申請・実績報告の代行をご希望の場合は別途お見積りします。</p>
 
 <h2>ご相談から入金までの流れ</h2>
 <div class="flowline">
@@ -986,7 +1000,7 @@ def build_static():
   <div><div class="s">STEP 3</div><div class="t">申請書の作成<span class="free">0円</span></div>
     <div class="d">事業計画書・収支計画を一緒に作ります。加点要件の取得もこの段階で手当てします。</div></div>
   <div><div class="s">STEP 4</div><div class="t">採択・お支払い</div>
-    <div class="d">採択が決まった時点で、はじめて成功報酬が発生します。以降の実績報告も支援できます。</div></div>
+    <div class="d">採択が決まった時点で、はじめて成功報酬（採択額の5%〜・最低10万円〜）が発生します。</div></div>
 </div>
 
 <h2>支援できること</h2>
@@ -1046,7 +1060,7 @@ def build_static():
          "九州補助金ナビへのお問い合わせ・補助金の無料相談はこちらから。",
          f"""
 <p>補助金の相談、掲載内容の訂正、取材・提携のご依頼はこちらからお願いします。</p>
-<div class="note"><strong>申請支援は着手金0円・完全成果報酬です。</strong>
+<div class="note"><strong>申請支援は着手金0円・完全成果報酬（採択額の5%〜・最低報酬10万円〜）です。</strong>
 制度選びと要件確認までは無料で、採択されなければ費用は発生しません。
 料率は着手前に書面でご提示します。→ <a href="{U('experts/')}">支援の中身と流れ</a></div>
 <h2>補助金の無料相談</h2>
