@@ -1591,7 +1591,8 @@ def build_alerts():
   <h1>締切アラート</h1>
   <p style="font-size:15px;color:var(--ink-70);margin:0;line-height:1.95">
   補助金でいちばん多い失敗は「知らないうちに締め切っていた」です。
-  九州・沖縄8県の締切を、お使いのカレンダーに直接流し込めるようにしました。登録も会員登録も要りません。</p>
+  九州・沖縄8県の締切を、お使いのカレンダーに直接流し込めるようにしました。
+  会員登録もメールアドレスの登録も要りません。実際に Google カレンダーで動作を確認しています。</p>
 </div>
 
 <div class="sub-grid">
@@ -1599,8 +1600,9 @@ def build_alerts():
     <div class="sic">{svg_icon("calendar")}</div>
     <span class="badge">おすすめ</span>
     <h3>カレンダーに締切を流し込む</h3>
-    <p>GoogleカレンダーやOutlookに購読登録すると、受付中の制度の締切が自動で入ります。
-    <strong>2週間前と3日前に通知</strong>が飛ぶよう設定済みです。毎朝の自動更新にも追随します。</p>
+    <p>GoogleカレンダーやOutlookに購読登録すると、受付中の制度の締切が終日予定として自動で入ります。
+    毎朝の自動更新にも追随し、<strong>公募が終わった制度は勝手に消えます</strong>。
+    追加のあと一度だけ通知を設定すれば、締切前のリマインドが届きます（手順は下記）。</p>
     <a class="btn" href="{webcal(ics_all)}">カレンダーに追加</a>
     <a class="btn ghost sm" style="margin-left:8px" href="{ics_all}">.icsを直接開く</a>
   </div>
@@ -1640,8 +1642,32 @@ def build_alerts():
   配信停止はいつでも同アドレスへのご連絡で承ります。</p>
 </form>
 
-<div class="note" style="margin-top:36px">カレンダーとRSSは、いま受付中の制度だけを対象にしています。
-公募が終了した制度は自動的にカレンダーから消えます。</div>
+<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:48px">
+Googleカレンダーでの通知設定（最初の一度だけ）</h2>
+<p style="font-size:14px;color:var(--ink-70);line-height:1.95;margin:10px 0 18px">
+Googleカレンダーは、購読したカレンダーに埋め込まれたリマインダーを使わない仕様です。
+そのため追加した直後は予定が入るだけで通知は鳴りません。次の手順で一度だけ設定してください。2分で終わります。</p>
+<ol style="font-size:14.5px;line-height:2.1">
+  <li>Googleカレンダーの設定（右上の歯車 →「設定」）を開く</li>
+  <li>左側の「他のカレンダーの設定」から<strong>九州・沖縄の補助金 締切カレンダー</strong>を選ぶ</li>
+  <li><strong>「終日の予定の通知」</strong>で「通知を追加」→ <strong>2 週間前</strong>を指定</li>
+  <li>もう一度「通知を追加」→ <strong>3 日前</strong>を指定</li>
+</ol>
+<div class="note">締切は終日の予定として登録しています。「予定の通知」ではなく
+<strong>「終日の予定の通知」</strong>のほうに設定してください。こちらでないと鳴りません。</div>
+
+<h3 style="font-family:var(--serif);font-size:17px;letter-spacing:.03em;margin-top:34px">
+新着をメールで受け取る裏技</h3>
+<p style="font-size:14px;color:var(--ink-70);line-height:1.95;margin:10px 0 0">
+同じ設定画面の「その他の通知」で<strong>「新しい予定」を「メール」</strong>にしておくと、
+本サイトが新しい公募を拾ってカレンダーに足したタイミングで、Googleからメールが届きます。
+メールアドレスの登録も、こちらへの申し込みも要りません。<strong>新着メール通知がこれだけで完成します。</strong></p>
+
+<div class="note" style="margin-top:30px">
+Apple カレンダー（macOS / iPhone）と Outlook では、購読時に
+「2週間前」「3日前」のリマインダーがそのまま効きます。追加の設定は要りません。<br>
+なお、購読カレンダーの取り込み間隔はカレンダー側が決めており、
+更新が反映されるまで数時間〜1日程度かかることがあります。</div>
 
 <h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:48px">いま締切が近いもの</h2>
 </div>
@@ -1649,7 +1675,7 @@ def build_alerts():
 {CTA}"""
     write("alerts/index.html", layout(
         f"締切アラート｜九州・沖縄の補助金の締切をカレンダーに流し込む｜{SITE_NAME}",
-        "九州・沖縄8県の補助金の締切を、Googleカレンダー等に購読登録できます。2週間前と3日前に通知。新着RSSとメール通知もご用意しています。登録不要・無料。",
+        "九州・沖縄8県の補助金の締切を、Googleカレンダー等に購読登録できます。締切前のリマインドと新着メール通知の設定手順つき。新着RSSもご用意。登録不要・無料。",
         body, "alerts/", data_js=True))
 
 # ================================================================ 共有データ / OGP画像
