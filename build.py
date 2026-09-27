@@ -1491,6 +1491,24 @@ def car_nav():
 ALERT_MAIL = os.environ.get("KH_ALERT_MAIL", "info@avengerz-japan.com")
 FEED_BASE = BASE_URL or "https://abengerz.github.io"
 
+def _ics_fold(line):
+    """RFC 5545 の 75 オクテット折り返し。マルチバイト文字の途中では折らない。"""
+    if len(line.encode("utf-8")) <= 75:
+        return line
+    parts, buf, blen, cap = [], "", 0, 75
+    for ch in line:
+        cb = len(ch.encode("utf-8"))
+        if blen + cb > cap:
+            parts.append(buf)
+            buf, blen, cap = ch, cb, 74   # 継続行は先頭の空白1オクテットぶん減る
+        else:
+            buf += ch
+            blen += cb
+    if buf:
+        parts.append(buf)
+    return "\r\n ".join(parts)
+
+
 def _ics_escape(t):
     return (t or "").replace("\\", "\\\\").replace(";", r"\;").replace(",", r"\,").replace("\n", r"\n")
 
@@ -1521,7 +1539,7 @@ def build_feeds():
                   f"DESCRIPTION:{_ics_escape('締切3日前：' + r['title'][:50])}", "END:VALARM",
                   "END:VEVENT"]
         L.append("END:VCALENDAR")
-        write(name, "\r\n".join(L) + "\r\n")
+        write(name, "\r\n".join(_ics_fold(x) for x in L) + "\r\n")
 
     def feed(rs, name, title, link):
         items = []
