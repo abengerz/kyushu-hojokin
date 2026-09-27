@@ -37,6 +37,17 @@ jobs:
         if: github.event_name != 'push'
         run: python fetch.py
 
+      - name: Deadline alert digest (scheduled / manual only)
+        if: github.event_name != 'push'
+        continue-on-error: true
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_TO:   ${{ vars.ALERT_TO }}
+          ALERT_FROM: ${{ vars.ALERT_FROM }}
+          KH_BASE:     ${{ vars.KH_BASE }}
+          KH_BASE_URL: ${{ vars.KH_BASE_URL }}
+        run: python alert.py
+
       - name: Commit refreshed data
         if: github.event_name != 'push'
         continue-on-error: true

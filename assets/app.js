@@ -148,6 +148,79 @@
     load().then(draw);
   }
 
+
+  /* ---------- 新着カルーセル ---------- */
+  document.querySelectorAll('[data-carousel]').forEach(function (car) {
+    var track = car.querySelector('.car-track');
+    var bar = car.querySelector('.car-bar i');
+    var wrapEl = car.closest('.wrap') || document;
+    var prev = wrapEl.querySelector('[data-car="prev"]');
+    var next = wrapEl.querySelector('[data-car="next"]');
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function step() {
+      var first = track.querySelector('a');
+      return first ? first.getBoundingClientRect().width + 16 : 300;
+    }
+    function sync() {
+      var max = track.scrollWidth - track.clientWidth;
+      var r = max > 0 ? track.scrollLeft / max : 0;
+      if (bar) bar.style.width = Math.max(12, Math.min(100, (track.clientWidth / track.scrollWidth) * 100 + r * 8)) + '%';
+      if (bar) bar.style.marginLeft = (r * (100 - parseFloat(bar.style.width))) + '%';
+      if (prev) prev.disabled = track.scrollLeft <= 4;
+      if (next) next.disabled = track.scrollLeft >= max - 4;
+    }
+    if (prev) prev.addEventListener('click', function () { track.scrollLeft -= step() * 2; });
+    if (next) next.addEventListener('click', function () { track.scrollLeft += step() * 2; });
+    track.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    sync();
+
+    if (!reduce) {
+      var timer = null, paused = false;
+      function tick() {
+        if (paused) return;
+        var max = track.scrollWidth - track.clientWidth;
+        if (track.scrollLeft >= max - 4) track.scrollLeft = 0;
+        else track.scrollLeft += step();
+      }
+      function start() { if (!timer) timer = setInterval(tick, 4200); }
+      function stop() { clearInterval(timer); timer = null; }
+      car.addEventListener('mouseenter', function () { paused = true; });
+      car.addEventListener('mouseleave', function () { paused = false; });
+      car.addEventListener('focusin', function () { paused = true; });
+      track.addEventListener('touchstart', function () { paused = true; }, { passive: true });
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (es) {
+          es[0].isIntersecting ? start() : stop();
+        }, { threshold: .2 }).observe(car);
+      } else start();
+    }
+  });
+
+  /* ---------- 締切アラートの申し込みフォーム ---------- */
+  var af = document.getElementById('alertform');
+  if (af) {
+    af.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var g = function (id) { return (document.getElementById(id) || {}).value || ''; };
+      var pref = g('a-pref'), ind = g('a-ind'), pur = g('a-pur'), co = g('a-co'), nm = g('a-name');
+      var lines = [
+        '九州補助金ナビの締切アラートを申し込みます。',
+        '',
+        '会社名・屋号：' + (co || '（未記入）'),
+        'お名前：' + (nm || '（未記入）'),
+        '都道府県：' + (pref || '指定しない'),
+        '業種：' + (ind || '指定しない'),
+        '目的：' + (pur || '指定しない'),
+        '',
+        '（このまま送信してください。折り返しご連絡します。）'
+      ];
+      var subj = '【締切アラート申込】' + (pref || '九州・沖縄') + (ind ? '／' + ind : '');
+      location.href = 'mailto:info@avengerz-japan.com?subject=' + encodeURIComponent(subj) +
+        '&body=' + encodeURIComponent(lines.join('\n'));
+    });
+  }
+
   /* ================= 補助金AI相談 ================= */
   var FAQ = [
     { k: ['いつ', '入金', 'もらえる', '振り込', '後払い', '前払い'], a:

@@ -138,17 +138,18 @@ def U(p=""):
     return (BASE + "/" + p) if p else (BASE + "/")
 
 MARK = ('<svg class="mark" viewBox="0 0 32 32" aria-hidden="true">'
-        '<rect x="12" y="1" width="9" height="7" fill="#12384F"/>'
-        '<rect x="3" y="9.5" width="9" height="7" fill="#12384F" opacity=".78"/>'
-        '<rect x="13" y="9.5" width="9" height="7" fill="#C3452B"/>'
-        '<rect x="23" y="9.5" width="7" height="7" fill="#12384F" opacity=".55"/>'
-        '<rect x="8" y="18" width="9" height="7" fill="#12384F" opacity=".78"/>'
-        '<rect x="18" y="18" width="7" height="7" fill="#12384F" opacity=".55"/>'
-        '<rect x="1" y="26.5" width="6" height="4.5" fill="#2E7C86"/>'
-        '<rect x="9" y="26.5" width="8" height="4.5" fill="#12384F" opacity=".4"/></svg>')
+        '<rect x="12" y="1" width="9" height="7" fill="#1A6DB5"/>'
+        '<rect x="3" y="9.5" width="9" height="7" fill="#1A6DB5" opacity=".78"/>'
+        '<rect x="13" y="9.5" width="9" height="7" fill="#0E9BC4"/>'
+        '<rect x="23" y="9.5" width="7" height="7" fill="#1A6DB5" opacity=".55"/>'
+        '<rect x="8" y="18" width="9" height="7" fill="#1A6DB5" opacity=".78"/>'
+        '<rect x="18" y="18" width="7" height="7" fill="#1A6DB5" opacity=".55"/>'
+        '<rect x="1" y="26.5" width="6" height="4.5" fill="#6FBCF0"/>'
+        '<rect x="9" y="26.5" width="8" height="4.5" fill="#1A6DB5" opacity=".4"/></svg>')
 
 NAV = [("補助金を探す","search/"),("県から探す","#pref"),("目的から探す","purpose/"),
-       ("対象者から","audience/"),("制度ガイド","guide/"),("許認可","permit/"),("AI相談","ai/")]
+       ("対象者から","audience/"),("制度ガイド","guide/"),("許認可","permit/"),
+       ("締切アラート","alerts/"),("AI相談","ai/")]
 
 def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False, schema="", with_ai=True):
     canon = (BASE_URL + U(path)) if BASE_URL else ""
@@ -171,7 +172,7 @@ def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{U('assets/style.css')}">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2312384F'/%3E%3Crect x='13' y='11' width='8' height='7' fill='%23C3452B'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231A6DB5'/%3E%3Crect x='13' y='11' width='8' height='7' fill='%230E9BC4'/%3E%3C/svg%3E">
 {schema}{extra_head}
 </head><body>
 <div class="topbar"><div class="wrap">
@@ -194,6 +195,7 @@ def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False
     <div><h4>探す</h4><ul>
       <li><a href="{U('search/')}">全制度を検索</a></li>
       <li><a href="{U('ai/')}">補助金AI相談</a></li>
+      <li><a href="{U('alerts/')}">締切アラート</a></li>
       <li><a href="{U('deadline/')}">締切カレンダー</a></li>
       <li><a href="{U('purpose/')}">目的から探す</a></li>
       <li><a href="{U('industry/')}">業種から探す</a></li>
@@ -329,46 +331,55 @@ def build_index():
 </div></section>
 
 <section><div class="wrap">
-  {sec_h("CLOSING SOON","締切が近い、受付中の制度","締切日が早い順。申請書の準備には通常2〜4週間かかります。",("締切カレンダーを見る",U("deadline/")))}
+  <div class="sec-h"><div><span class="en">JUST ADDED</span>
+    <h2>新着の補助金・助成金</h2>
+    <p>公募が始まったばかりの制度です。締切までの期間が長いうちに準備を始めるほど、通る確率は上がります。</p></div>
+    {car_nav()}</div>
+  {carousel(newest(14))}
+  <div style="padding-top:14px"><a class="more" href="{U('alerts/')}">新着をカレンダー・RSSで受け取る →</a></div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  {sec_h("CLOSING SOON","締切が近い、受付中の制度","締切日が早い順。申請書の準備には通常2〜4週間かかります。",("締切アラートを設定する",U("alerts/")))}
   {rows(near)}
 </div></section>
 
-<section class="alt" id="pref"><div class="wrap">
+<section id="pref"><div class="wrap">
   {sec_h("BY PREFECTURE","県から補助金・助成金を探す","国・独立行政法人・県が公募する制度のうち、その県の事業者が対象になるものを集約しています。")}
   <div class="prefgrid">{prefcards}</div>
 </div></section>
 
-<section id="purpose"><div class="wrap">
+<section class="alt" id="purpose"><div class="wrap">
   {sec_h("BY PURPOSE","目的から探す","「設備を入れたい」「人を育てたい」など、やりたいことから逆引きします。",("すべて見る",U("purpose/")))}
   <div class="chips">{purpose_chips}</div>
 </div></section>
 
-<section class="alt" id="industry"><div class="wrap">
+<section id="industry"><div class="wrap">
   {sec_h("BY INDUSTRY","業種から探す","日本標準産業分類ベース。自社の業種が対象に含まれる制度だけを表示します。",("すべて見る",U("industry/")))}
   <div class="chips">{industry_chips}</div>
 </div></section>
 
-<section><div class="wrap">
+<section class="alt"><div class="wrap">
   {sec_h("BY AUDIENCE","対象者から探す","自社の形態から、対象になりうる制度を絞り込みます。",("すべて見る",U("audience/")))}
   {audience_chips}
 </div></section>
 
-<section class="alt"><div class="wrap">
+<section><div class="wrap">
   {sec_h("PERMITS","許認可・届出ガイド","補助金の前に、まず事業を始める許可が要ります。業種別にまとめました。",("すべて見る",U("permit/")))}
   {permit_chips}
 </div></section>
 
-<section><div class="wrap">
+<section class="alt"><div class="wrap">
   {sec_h("MAX AMOUNT","補助額の大きい、受付中の制度","上限額が大きい順。自己負担と事務負担も同時に大きくなる点には注意してください。")}
   {rows(big)}
 </div></section>
 
-<section class="alt"><div class="wrap">
+<section><div class="wrap">
   {sec_h("GUIDES","制度ガイド","九州・沖縄の事業者がつまずきやすい論点を中心に解説します。",("すべてのガイドを見る",U("guide/")))}
   <div class="guides">{guides_html}</div>
 </div></section>
 
-<section><div class="wrap">
+<section class="alt"><div class="wrap">
   {sec_h("EXPERTS","九州・沖縄の専門家が、申請まで伴走します","採択の可否を分けるのは制度選びより事業計画の書き方です。地場の士業と連携しています。",("専門家を見る",U("experts/")))}
   <div class="experts">{EXPERT_TILES}</div>
 </div></section>
@@ -685,6 +696,13 @@ def build_prefs():
 </div></section>
 
 <section class="alt"><div class="wrap">
+ <div class="sec-h"><div><span class="en">JUST ADDED</span><h2>{n}の新着</h2>
+   <p>公募が始まったばかりの制度です。</p></div>{car_nav()}</div>
+ {carousel([r for r in newest(200) if n in r["prefs"]][:12], "car-"+s)}
+ <div style="padding-top:12px"><a class="more" href="{U('alerts/')}">{n}の締切カレンダーを購読する →</a></div>
+</div></section>
+
+<section><div class="wrap">
  {sec_h("BY PURPOSE","{}で、目的から絞り込む".format(n))}
  {chips}
 </div></section>
@@ -909,8 +927,8 @@ def build_static():
 <h2>補助金の無料相談</h2>
 <p>以下をお知らせいただくと、回答が早くなります。</p>
 <ol><li>事業所のある県・市町村</li><li>業種</li><li>従業員数</li><li>やりたいこと（設備を入れたい／人を採りたい／販路を広げたい　など）</li><li>想定している投資額と時期</li></ol>
-<p style="margin-top:28px"><a class="btn" href="mailto:info@example.com?subject=%E8%A3%9C%E5%8A%A9%E9%87%91%E3%81%AE%E7%9B%B8%E8%AB%87">メールで相談する</a></p>
-<div class="note">※ 公開デモのため、送信先メールアドレスは仮置きです。本番運用時に実際の連絡先／フォームへ差し替えてください。</div>
+<p style="margin-top:28px"><a class="btn" href="mailto:info@avengerz-japan.com?subject=%E8%A3%9C%E5%8A%A9%E9%87%91%E3%81%AE%E7%9B%B8%E8%AB%87">メールで相談する</a></p>
+<div class="note">お急ぎの場合は、件名に県名と業種を入れていただけると回答が早くなります。</div>
 <h2>掲載内容について</h2>
 <p>本サイトの制度情報はjGrants公開APIをもとに自動生成しています。内容に誤りを見つけられた場合、お手数ですが該当ページのURLを添えてご連絡ください。</p>
 ""","お問い合わせ")
@@ -956,8 +974,8 @@ def build_static():
 
 # ---------------------------------------------------------------- sitemap
 def build_meta():
-    urls = ["", "search/", "deadline/", "guide/", "purpose/", "industry/", "audience/", "permit/",
-            "ai/", "experts/", "about/", "contact/", "privacy/", "terms/"]
+    urls = ["", "search/", "deadline/", "alerts/", "guide/", "purpose/", "industry/", "audience/",
+            "permit/", "ai/", "experts/", "about/", "contact/", "privacy/", "terms/"]
     urls += [f"pref/{s}/" for s,_,_,_ in PREFS]
     urls += [f"audience/{a[0]}/" for a in AUDIENCES]
     urls += [f"permit/{x[0]}/" for x in PERMITS]
@@ -1052,8 +1070,8 @@ KMAP = json.load(open(os.path.join(ROOT, "data", "kyushu_map.json"), encoding="u
 
 LABEL_ADJ = {"fukuoka": (12, -10), "saga": (-14, 2), "nagasaki": (-16, 18),
              "kumamoto": (-2, -6), "oita": (2, -2), "miyazaki": (4, 2), "kagoshima": (-4, -6)}
-PREF_FILL = {"fukuoka": "#C3DCEF", "saga": "#A9CBE6", "nagasaki": "#D3E7F4", "kumamoto": "#B6D5EC",
-             "oita": "#DBECF7", "miyazaki": "#C9E1F2", "kagoshima": "#AFD0E9", "okinawa": "#BFDAEE"}
+PREF_FILL = {"fukuoka": "#BFE1FB", "saga": "#9ED3F6", "nagasaki": "#D8EDFD", "kumamoto": "#AFDAF8",
+             "oita": "#E2F2FE", "miyazaki": "#C9E7FC", "kagoshima": "#A6D6F7", "okinawa": "#BBDFFA"}
 
 def kmap(active=None):
     shapes, labels = [], []
@@ -1092,7 +1110,7 @@ def pref_thumb(slug):
 HERO_ART = ('<div class="hero-art" aria-hidden="true"><svg viewBox="0 0 600 600" '
             'xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">'
             '<defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">'
-            '<stop offset="0" stop-color="#9EC8E8"/><stop offset="1" stop-color="#E6EFF7"/>'
+            '<stop offset="0" stop-color="#7CC2F3"/><stop offset="1" stop-color="#E3F1FD"/>'
             '</linearGradient></defs>'
             + "".join(
                 f'<circle cx="430" cy="210" r="{r}" fill="none" stroke="url(#hg)" '
@@ -1100,12 +1118,12 @@ HERO_ART = ('<div class="hero-art" aria-hidden="true"><svg viewBox="0 0 600 600"
                 for i, r in enumerate(range(40, 460, 26)))
             + "".join(
                 f'<path d="M-40 {y} C 120 {y-34}, 260 {y+30}, 420 {y-12} S 660 {y+22}, 700 {y-6}" '
-                f'fill="none" stroke="#7FB4DC" stroke-width="1" opacity="{0.30 - i*0.028:.2f}"/>'
+                f'fill="none" stroke="#6FB8EE" stroke-width="1" opacity="{0.34 - i*0.030:.2f}"/>'
                 for i, y in enumerate(range(430, 620, 22)))
             + '</svg></div>')
 
-_EYE_PAL = [("#14476E", "#3E9AD6"), ("#0E7490", "#7FD1E0"), ("#1F6FA8", "#9EC8E8"),
-            ("#0D2B45", "#5FA8D8"), ("#17607F", "#8FC2E8"), ("#1B5E8C", "#6FB6E2")]
+_EYE_PAL = [("#1A6DB5", "#8FD0F7"), ("#0E9BC4", "#9DE6F2"), ("#2A7FC4", "#B6DFFA"),
+            ("#103F6E", "#79C0F2"), ("#1487B5", "#A5DCF6"), ("#2573B8", "#94CFF6")]
 def guide_eye(i, motif=0):
     a, b = _EYE_PAL[i % len(_EYE_PAL)]
     m = motif % 4
@@ -1435,6 +1453,187 @@ def build_ai():
         f"県・業種・やりたいことを文章で入力すると、九州・沖縄8県の補助金{N_ALL:,}件から条件に合う制度を探します。登録不要・24時間。",
         body, "ai/", data_js=True))
 
+# ================================================================ 新着カルーセル
+def newest(n=14):
+    """受付開始日が新しい順。開始日が無いものは締切日で代替する。"""
+    rs = [r for r in RECS if r["status"] in ("open", "soon")]
+    rs.sort(key=lambda r: (r["start"] or r["end"] or ""), reverse=True)
+    return rs[:n]
+
+def carousel(rs, cid="car1"):
+    cs = []
+    for r in rs:
+        left = (r["dl"] - TODAY).days if r["dl"] else None
+        dl = ""
+        if r["end"]:
+            dl = f'<div class="cdl">締切 {jd(r["end"])}'
+            if left is not None and 0 <= left <= 60:
+                dl += f'<b>あと{left}日</b>'
+            dl += '</div>'
+        tags = badge(r)
+        tags += ('<span class="tag">全国対象</span>' if r["nationwide"]
+                 else "".join(f'<span class="tag pref">{p}</span>' for p in r["prefs"][:2]))
+        cs.append(f'<a href="{U("subsidy/"+r["id"]+"/")}">'
+                  f'<div class="cmeta">{tags}</div><h3>{esc(r["title"])}</h3>'
+                  f'<div class="cfoot"><div class="camt"><small>補助上限</small>{yen(r["max"])}</div>{dl}</div></a>')
+    return (f'<div class="carousel" data-carousel id="{cid}">'
+            f'<div class="car-track">{"".join(cs)}</div>'
+            f'<div class="car-bar"><i style="width:30%"></i></div></div>')
+
+def car_nav():
+    return ('<div class="car-nav">'
+            '<button type="button" data-car="prev" aria-label="前へ">'
+            '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>'
+            '<button type="button" data-car="next" aria-label="次へ">'
+            '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button></div>')
+
+# ================================================================ 締切アラート（購読）
+ALERT_MAIL = os.environ.get("KH_ALERT_MAIL", "info@avengerz-japan.com")
+FEED_BASE = BASE_URL or "https://abengerz.github.io"
+
+def _ics_escape(t):
+    return (t or "").replace("\\", "\\\\").replace(";", r"\;").replace(",", r"\,").replace("\n", r"\n")
+
+def build_feeds():
+    """締切カレンダー(.ics)と新着フィード(.xml)。県別も出す。"""
+    def ics(rs, name, title):
+        L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//九州補助金ナビ//JP",
+             "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+             f"X-WR-CALNAME:{_ics_escape(title)}",
+             "X-WR-TIMEZONE:Asia/Tokyo",
+             f"X-WR-CALDESC:{_ics_escape('九州・沖縄の補助金の締切。' + TODAY_JP + '時点の情報を毎朝更新しています。')}"]
+        stamp = TODAY.strftime("%Y%m%dT000000Z")
+        for r in rs:
+            if not r["dl"]: continue
+            d = r["dl"]
+            L += ["BEGIN:VEVENT",
+                  f"UID:{r['id']}@kyushu-hojokin",
+                  f"DTSTAMP:{stamp}",
+                  f"DTSTART;VALUE=DATE:{d.strftime('%Y%m%d')}",
+                  f"DTEND;VALUE=DATE:{(d + datetime.timedelta(days=1)).strftime('%Y%m%d')}",
+                  f"SUMMARY:{_ics_escape('【締切】' + r['title'][:70])}",
+                  f"DESCRIPTION:{_ics_escape('補助上限 ' + yen(r['max']) + ' / 補助率 ' + (r['rate'] or '要確認') + chr(10) + '対象：' + '、'.join(r['prefs'][:8]) + chr(10) + FEED_BASE + U('subsidy/' + r['id'] + '/'))}",
+                  f"URL:{FEED_BASE}{U('subsidy/' + r['id'] + '/')}",
+                  "TRANSP:TRANSPARENT",
+                  "BEGIN:VALARM", "TRIGGER:-P14D", "ACTION:DISPLAY",
+                  f"DESCRIPTION:{_ics_escape('締切2週間前：' + r['title'][:50])}", "END:VALARM",
+                  "BEGIN:VALARM", "TRIGGER:-P3D", "ACTION:DISPLAY",
+                  f"DESCRIPTION:{_ics_escape('締切3日前：' + r['title'][:50])}", "END:VALARM",
+                  "END:VEVENT"]
+        L.append("END:VCALENDAR")
+        write(name, "\r\n".join(L) + "\r\n")
+
+    def feed(rs, name, title, link):
+        items = []
+        for r in rs:
+            u = FEED_BASE + U("subsidy/" + r["id"] + "/")
+            desc = (f"補助上限 {yen(r['max'])} ／ 補助率 {r['rate'] or '要確認'} ／ "
+                    f"締切 {jd_long(r['end'])} ／ 対象 {'、'.join(r['prefs'][:8])}")
+            pub = ""
+            d = dateobj(r["start"]) or r["dl"]
+            if d: pub = f"<pubDate>{d.strftime('%a, %d %b %Y')} 09:00:00 +0900</pubDate>"
+            items.append(f"<item><title>{esc(r['title'])}</title><link>{u}</link>"
+                         f"<guid isPermaLink=\"true\">{u}</guid>"
+                         f"<description>{esc(desc)}</description>{pub}</item>")
+        write(name, '<?xml version="1.0" encoding="UTF-8"?>\n'
+              '<rss version="2.0"><channel>'
+              f'<title>{esc(title)}</title><link>{link}</link>'
+              f'<description>{esc(title)}／国のオープンデータ(jGrants)を毎朝収集しています。</description>'
+              f'<language>ja</language>'
+              f'<lastBuildDate>{TODAY.strftime("%a, %d %b %Y")} 09:00:00 +0900</lastBuildDate>'
+              + "".join(items) + "</channel></rss>")
+
+    up = sorted([r for r in RECS if r["status"] in ("open", "soon") and r["dl"]], key=lambda r: r["dl"])
+    ics(up, "alerts/deadline.ics", "九州・沖縄の補助金 締切カレンダー")
+    feed(newest(50), "alerts/new.xml", "九州補助金ナビ 新着の補助金・助成金", FEED_BASE + U())
+    for s2, n, en, _ in PREFS:
+        ics([r for r in up if n in r["prefs"]], f"alerts/deadline-{s2}.ics", f"{n}の補助金 締切カレンダー")
+        pr = [r for r in newest(200) if n in r["prefs"]][:50]
+        feed(pr, f"alerts/new-{s2}.xml", f"{n}の新着補助金・助成金", FEED_BASE + U("pref/" + s2 + "/"))
+
+def build_alerts():
+    def webcal(u): return u.replace("https://", "webcal://").replace("http://", "webcal://")
+    ics_all = FEED_BASE + U("alerts/deadline.ics")
+    rss_all = FEED_BASE + U("alerts/new.xml")
+    feeds = "".join(
+        f'<a href="{FEED_BASE}{U("alerts/deadline-"+s2+".ics")}">{n}<span>カレンダー / RSS</span></a>'
+        for s2, n, _, _ in PREFS)
+    rssfeeds = "".join(
+        f'<a href="{FEED_BASE}{U("alerts/new-"+s2+".xml")}">{n}<span>新着RSS</span></a>'
+        for s2, n, _, _ in PREFS)
+    pref_opts = "".join(f'<option value="{n}">{n}</option>' for _, n, _, _ in PREFS)
+    pur_opts = "".join(f'<option value="{esc(p)}">{esc(p)}</option>' for p in PURPOSE_LIST)
+    ind_opts = "".join(f'<option value="{esc(p)}">{esc(p)}</option>' for p in INDUSTRY_LIST)
+    near = sorted([r for r in OPEN if r["dl"]], key=lambda r: r["dl"])[:10]
+
+    body = f"""
+<div class="wrap narrow"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>締切アラート</div>
+<div class="detail-h">
+  <span class="tag" style="border-color:var(--hi);color:var(--hi)">DEADLINE ALERT</span>
+  <h1>締切アラート</h1>
+  <p style="font-size:15px;color:var(--ink-70);margin:0;line-height:1.95">
+  補助金でいちばん多い失敗は「知らないうちに締め切っていた」です。
+  九州・沖縄8県の締切を、お使いのカレンダーに直接流し込めるようにしました。登録も会員登録も要りません。</p>
+</div>
+
+<div class="sub-grid">
+  <div class="sub-card">
+    <div class="sic">{svg_icon("calendar")}</div>
+    <span class="badge">おすすめ</span>
+    <h3>カレンダーに締切を流し込む</h3>
+    <p>GoogleカレンダーやOutlookに購読登録すると、受付中の制度の締切が自動で入ります。
+    <strong>2週間前と3日前に通知</strong>が飛ぶよう設定済みです。毎朝の自動更新にも追随します。</p>
+    <a class="btn" href="{webcal(ics_all)}">カレンダーに追加</a>
+    <a class="btn ghost sm" style="margin-left:8px" href="{ics_all}">.icsを直接開く</a>
+  </div>
+  <div class="sub-card">
+    <div class="sic">{svg_icon("mega")}</div>
+    <h3>新着をRSSで受け取る</h3>
+    <p>新しく公募が始まった制度を配信します。SlackやFeedly、Teamsに流し込めば、
+    担当者が見に来なくても新着が届きます。</p>
+    <a class="btn ghost" href="{rss_all}">RSSを購読する</a>
+  </div>
+</div>
+
+<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:44px">県別のカレンダー</h2>
+<p style="font-size:13.5px;color:var(--ink-55);margin:10px 0 0">自社の県だけに絞ると、予定表が埋まりません。</p>
+<div class="feed-list">{feeds}</div>
+
+<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:40px">県別の新着RSS</h2>
+<div class="feed-list">{rssfeeds}</div>
+
+<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:44px">メールで受け取る</h2>
+<p style="font-size:14px;color:var(--ink-70);line-height:1.95;margin:10px 0 20px">
+条件を選んで送信すると、メールソフトが立ち上がります。そのまま送っていただければ、
+新着と締切が近づいたタイミングでご連絡します。無料です。</p>
+<form class="mailform" id="alertform">
+  <div class="fr">
+    <div><label>都道府県</label><select id="a-pref"><option value="">指定しない</option>{pref_opts}</select></div>
+    <div><label>業種</label><select id="a-ind"><option value="">指定しない</option>{ind_opts}</select></div>
+    <div><label>目的</label><select id="a-pur"><option value="">指定しない</option>{pur_opts}</select></div>
+  </div>
+  <div class="fr" style="grid-template-columns:1fr 1fr">
+    <div><label>会社名・屋号</label><input id="a-co" placeholder="株式会社◯◯"></div>
+    <div><label>お名前</label><input id="a-name" placeholder="山田 太郎"></div>
+  </div>
+  <button class="btn" type="submit">この条件でアラートを申し込む</button>
+  <p style="font-size:11.5px;color:var(--ink-40);margin:14px 0 0;line-height:1.7">
+  送信先：{ALERT_MAIL}　／　いただいた情報はアラートの配信にのみ使用します。
+  配信停止はいつでも同アドレスへのご連絡で承ります。</p>
+</form>
+
+<div class="note" style="margin-top:36px">カレンダーとRSSは、いま受付中の制度だけを対象にしています。
+公募が終了した制度は自動的にカレンダーから消えます。</div>
+
+<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:48px">いま締切が近いもの</h2>
+</div>
+<div class="wrap">{rows(near)}</div>
+{CTA}"""
+    write("alerts/index.html", layout(
+        f"締切アラート｜九州・沖縄の補助金の締切をカレンダーに流し込む｜{SITE_NAME}",
+        "九州・沖縄8県の補助金の締切を、Googleカレンダー等に購読登録できます。2週間前と3日前に通知。新着RSSとメール通知もご用意しています。登録不要・無料。",
+        body, "alerts/", data_js=True))
+
 # ================================================================ 共有データ / OGP画像
 def build_data():
     payload = [{"i":r["id"],"t":r["title"],"p":r["prefs"],"m":r["max"],"r":r["rate"],
@@ -1472,30 +1671,30 @@ def build_og():
             try: font = f; break
             except Exception: pass
     W, H = 1200, 630
-    img = Image.new("RGB", (W, H), "#0D2B45")
+    img = Image.new("RGB", (W, H), "#103F6E")
     dr = ImageDraw.Draw(img)
     for i in range(H):                       # 上から下への淡いグラデーション
         t = i / H
-        dr.line([(0, i), (W, i)], fill=(int(13+18*t), int(43+30*t), int(69+38*t)))
+        dr.line([(0, i), (W, i)], fill=(int(16+22*t), int(63+34*t), int(110*1.0+40*t)))
     # 九州のシルエット
     sc = 1.28; ox, oy = 810, 70
     for slug in KMAP["main"]:
         if slug == "viewBox": continue
         for poly in _parse_path(KMAP["main"][slug], sc, ox, oy):
-            dr.polygon(poly, fill="#2E6C99")
+            dr.polygon(poly, fill="#4F9BD8")
     for poly in _parse_path(KMAP["okinawa"]["path"], sc*.8, 790, 500):
-        dr.polygon(poly, fill="#2E6C99")
-    dr.rectangle([70, 96, 76, 534], fill="#3E9AD6")
+        dr.polygon(poly, fill="#4F9BD8")
+    dr.rectangle([70, 96, 76, 534], fill="#8FD0F7")
     if font:
         try:
             f1 = ImageFont.truetype(font, 62); f2 = ImageFont.truetype(font, 30)
             f3 = ImageFont.truetype(font, 25); f4 = ImageFont.truetype(font, 21)
             dr.text((112, 128), "九州補助金ナビ", font=f1, fill="#FFFFFF")
-            dr.text((114, 214), "KYUSHU & OKINAWA GRANTS", font=f4, fill="#8FC2E8")
-            dr.text((112, 290), "九州・沖縄8県の事業者が使える", font=f2, fill="#DCE9F3")
-            dr.text((112, 336), "補助金・助成金だけを集めました", font=f2, fill="#DCE9F3")
-            dr.text((112, 432), f"掲載 {N_ALL:,} 件 ／ 受付中 {N_OPEN:,} 件", font=f3, fill="#3E9AD6")
-            dr.text((112, 476), f"出典：デジタル庁 jGrants 公開API（{TODAY_JP}時点）", font=f4, fill="#7FA8C8")
+            dr.text((114, 214), "KYUSHU & OKINAWA GRANTS", font=f4, fill="#A8D8F8")
+            dr.text((112, 290), "九州・沖縄8県の事業者が使える", font=f2, fill="#E6F3FD")
+            dr.text((112, 336), "補助金・助成金だけを集めました", font=f2, fill="#E6F3FD")
+            dr.text((112, 432), f"掲載 {N_ALL:,} 件 ／ 受付中 {N_OPEN:,} 件", font=f3, fill="#8FD0F7")
+            dr.text((112, 476), f"出典：デジタル庁 jGrants 公開API（{TODAY_JP}時点）", font=f4, fill="#8FB9DC")
         except Exception as e:
             print("[warn] OGP 文字描画に失敗:", e)
     else:
@@ -1512,7 +1711,7 @@ if __name__ == "__main__":
     build_index(); build_prefs(); build_taxonomy(); build_search()
     build_guides(); build_audience(); build_permits(); build_ai()
     build_static(); build_subsidies(); build_cross()
-    build_data(); build_og(); build_meta()
+    build_alerts(); build_feeds(); build_data(); build_og(); build_meta()
     n = sum(len(f) for _, _, f in os.walk(OUT))
     print(f"built {n} files -> {OUT}")
     print(f"records={N_ALL} open={N_OPEN} local={N_LOCAL} purposes={len(PURPOSE_LIST)} "
