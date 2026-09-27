@@ -379,7 +379,9 @@ def build_index():
 <div class="hero">{HERO_ART}<div class="wrap">
   <div>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
-    <h1 class="hero-t">その補助金、<br><span style="white-space:nowrap"><span class="u">うちも使えますか</span>。</span></h1>
+    <h1 class="hero-t">補助金は、探すより<br><span style="white-space:nowrap"><span class="u">通す</span>ほうが難しい。</span></h1>
+    <p class="hero-sub">九州・沖縄8県の制度を集めました。見つけたあとの
+    <span style="white-space:nowrap">「通すところ」</span>まで、まるごと引き受けます。</p>
     <div class="hero-answer">
       <div class="hero-offer">
         <div class="ho-l"><span>申請支援は</span><b>着手金0円・完全成果報酬</b></div>
