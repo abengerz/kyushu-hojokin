@@ -122,6 +122,42 @@ INDUSTRY_LIST = [p for p,_ in INDUSTRIES.most_common()]
 P_SLUG = {p: slug(p) for p in PURPOSE_LIST}
 I_SLUG = {p: slug(p) for p in INDUSTRY_LIST}
 
+# ---- 自治体サイトから収集した市区町村・県の独自制度 ----
+MUNI = _load("municipal.json", [])
+for _m in MUNI:
+    _m["dl"] = None
+    if _m.get("deadline"):
+        _mm = re.match(r"令和(\d+|元)年(\d+)月(\d+)日", _m["deadline"])
+        if _mm:
+            _y = 2018 + (1 if _mm.group(1) == "元" else int(_mm.group(1)))
+            try:
+                _m["dl"] = datetime.date(_y, int(_mm.group(2)), int(_mm.group(3)))
+            except ValueError:
+                pass
+    _m["status"] = "closed" if (_m["dl"] and _m["dl"] < TODAY) else "open"
+MUNI = [m for m in MUNI if m["status"] == "open"]
+MUNI.sort(key=lambda m: (m["dl"] or datetime.date(2099, 1, 1), -(m["max"] or 0)))
+MUNI_BY_PREF = collections.defaultdict(list)
+MUNI_BY_CITY = collections.defaultdict(list)
+for _m in MUNI:
+    MUNI_BY_PREF[_m["pref"]].append(_m)
+    MUNI_BY_CITY[(_m["pref"], _m["muni"])].append(_m)
+N_MUNI = len(MUNI)
+N_MUNI_CITY = len(MUNI_BY_CITY)
+MUNI_ROMAJI = {
+ "福岡県":"fukuoka-ken","福岡市":"fukuoka-shi","北九州市":"kitakyushu-shi","久留米市":"kurume-shi",
+ "飯塚市":"iizuka-shi","大牟田市":"omuta-shi","糸島市":"itoshima-shi","宗像市":"munakata-shi",
+ "佐賀県":"saga-ken","佐賀市":"saga-shi","唐津市":"karatsu-shi","鳥栖市":"tosu-shi",
+ "長崎県":"nagasaki-ken","長崎市":"nagasaki-shi","佐世保市":"sasebo-shi","諫早市":"isahaya-shi",
+ "熊本県":"kumamoto-ken","熊本市":"kumamoto-shi","八代市":"yatsushiro-shi","天草市":"amakusa-shi",
+ "大分県":"oita-ken","大分市":"oita-shi","別府市":"beppu-shi","中津市":"nakatsu-shi",
+ "宮崎県":"miyazaki-ken","宮崎市":"miyazaki-shi","都城市":"miyakonojo-shi","延岡市":"nobeoka-shi",
+ "鹿児島県":"kagoshima-ken","鹿児島市":"kagoshima-shi","霧島市":"kirishima-shi","鹿屋市":"kanoya-shi",
+ "沖縄県":"okinawa-ken","那覇市":"naha-shi","沖縄市":"okinawa-shi","うるま市":"uruma-shi",
+ "浦添市":"urasoe-shi","宮古島市":"miyakojima-shi",
+}
+MUNI_SLUG = {k: MUNI_ROMAJI.get(k[1], slug(k[0] + k[1])) for k in MUNI_BY_CITY}
+
 LOCAL = [r for r in RECS if not r["nationwide"]]
 N_LOCAL = len(LOCAL)
 def pref_recs(name): return [r for r in RECS if name in r["prefs"]]
@@ -148,8 +184,8 @@ MARK = ('<svg class="mark" viewBox="0 0 32 32" aria-hidden="true">'
         '<rect x="9" y="26.5" width="8" height="4.5" fill="#1A6DB5" opacity=".4"/></svg>')
 
 NAV = [("補助金を探す","search/"),("県から探す","#pref"),("目的から探す","purpose/"),
-       ("対象者から","audience/"),("制度ガイド","guide/"),("許認可","permit/"),
-       ("締切アラート","alerts/"),("AI相談","ai/")]
+       ("市区町村","muni/"),("対象者から","audience/"),("制度ガイド","guide/"),
+       ("許認可","permit/"),("締切アラート","alerts/"),("AI相談","ai/"),("申請支援","experts/")]
 
 def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False, schema="", with_ai=True):
     canon = (BASE_URL + U(path)) if BASE_URL else ""
@@ -200,13 +236,14 @@ def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False
       <li><a href="{U('purpose/')}">目的から探す</a></li>
       <li><a href="{U('industry/')}">業種から探す</a></li>
       <li><a href="{U('audience/')}">対象者から探す</a></li>
+      <li><a href="{U('muni/')}">市区町村の独自制度</a></li>
     </ul></div>
     <div><h4>県から探す</h4><ul>{''.join(f'<li><a href="{U("pref/"+s+"/")}">{n}の補助金</a></li>' for s,n,_,_ in PREFS[:4])}
       {''.join(f'<li><a href="{U("pref/"+s+"/")}">{n}の補助金</a></li>' for s,n,_,_ in PREFS[4:])}</ul></div>
     <div><h4>サイト情報</h4><ul>
       <li><a href="{U('guide/')}">制度ガイド</a></li>
       <li><a href="{U('permit/')}">許認可・届出ガイド</a></li>
-      <li><a href="{U('experts/')}">専門家に相談</a></li>
+      <li><a href="{U('experts/')}">申請支援（完全成果報酬）</a></li>
       <li><a href="{U('about/')}">運営について</a></li>
       <li><a href="{U('contact/')}">お問い合わせ</a></li>
       <li><a href="{U('privacy/')}">プライバシーポリシー</a></li>
@@ -266,12 +303,37 @@ def sec_h(en, h2, p="", more=None):
     return (f'<div class="sec-h"><div><span class="en">{en}</span><h2>{h2}</h2>'
             f'{f"<p>{p}</p>" if p else ""}</div>{m}</div>')
 
+SEIKA = f"""<section class="seika"><div class="wrap">
+  <div class="badge-row">
+    <span class="bg1"><i></i>着手金・相談料 0円</span>
+    <span class="bg2">SUCCESS FEE ONLY</span>
+  </div>
+  <h2>採択されなければ、<br><em>1円もいただきません。</em></h2>
+  <p class="lead">九州・沖縄の補助金申請を、<b>完全成果報酬</b>でお引き受けします。
+  制度選びから事業計画の作成、採択後の実績報告まで伴走して、
+  <b>採択が決まってはじめて</b>費用が発生します。落ちたときの持ち出しはゼロです。</p>
+  <div class="seika-grid">
+    <div><div class="n">0<small>円</small></div>
+      <div class="k">着手金・相談料<br>制度選びと要件確認まで無料です</div></div>
+    <div><div class="n">0<small>円</small></div>
+      <div class="k">不採択だった場合<br>報酬は一切発生しません</div></div>
+    <div><div class="n">成功報酬<small>のみ</small></div>
+      <div class="k">採択が決まってからのお支払い<br>料率は着手前に書面で提示します</div></div>
+  </div>
+  <div class="cta-row">
+    <a class="btn" href="{U('contact/')}">無料で相談する</a>
+    <a class="btn ghost" href="{U('experts/')}">支援の中身を見る</a>
+  </div>
+  <p class="fine">※ 補助金は後払いのため、採択後も設備代の立替が必要です。つなぎ資金のご相談も承ります。<br>
+  ※ 一部の制度や、申請期限が極端に迫っている案件はお引き受けできない場合があります。</p>
+</div></section>"""
+
 CTA = f"""<div class="cta"><div class="wrap narrow">
 <h2>制度は見つかった。次は「通る申請書」をつくる番。</h2>
-<p>九州・沖縄の行政書士・中小企業診断士・社労士・税理士と連携し、要件確認から事業計画書の作成・実績報告までを支援します。まずは無料の相談枠から。</p>
+<p>九州・沖縄の行政書士・中小企業診断士・社労士・税理士と連携し、要件確認から事業計画書の作成・実績報告までを支援します。<strong style="color:#fff">着手金0円の完全成果報酬</strong>なので、まずは無料の相談枠から。</p>
 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
 <a class="btn" href="{U('contact/')}">無料で相談する</a>
-<a class="btn ghost" href="{U('experts/')}">提携専門家を見る</a>
+<a class="btn ghost" href="{U('experts/')}">完全成果報酬の中身を見る</a>
 </div></div></div>"""
 
 # ---------------------------------------------------------------- トップページ
@@ -290,6 +352,16 @@ def build_index():
         f'<div class="pd">{d}</div></a>'
         for s,n,en,d in PREFS)
 
+    muni_cards = cards([(U("muni/"+MUNI_SLUG[k]+"/"), "town", k[1], len(v))
+                        for k, v in sorted(MUNI_BY_CITY.items(), key=lambda kv: -len(kv[1]))[:12]], "c4")
+    MUNI_SECTION = ("" if not MUNI else
+        '<section><div class="wrap">'
+        + sec_h("MUNICIPAL", "市区町村・県の独自制度",
+                f"国のオープンデータには載らない、自治体が単独で実施している支援です。"
+                f"{N_MUNI_CITY}自治体から{N_MUNI:,}件を公式サイトより収集しました。",
+                ("すべて見る", U("muni/")))
+        + muni_cards + '</div></section>')
+
     sd_pref = "".join(f'<button data-v="{n}">{n[:-1]}</button>' for _,n,_,_ in PREFS)
     sd_purpose = "".join(f'<button data-v="{esc(p)}">{esc(p.replace("したい","").replace("を行いたい","").replace("がほしい",""))}</button>' for p in PURPOSE_LIST[:8])
     sd_size = "".join(f'<button data-v="{e}">{e}</button>' for e in ["5名以下","20名以下","50名以下","100名以下","300名以下"])
@@ -303,6 +375,7 @@ def build_index():
     body = f"""
 <div class="hero">{HERO_ART}<div class="wrap">
   <div>
+    <span class="hero-badge"><i></i>申請支援は着手金0円・完全成果報酬</span>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
     <h1 class="hero-t"><span class="sm">福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄</span>
       九州の会社が使える<br>補助金だけを、<span style="white-space:nowrap"><span class="u">まとめて</span>。</span></h1>
@@ -321,6 +394,8 @@ def build_index():
   <div><div class="n">{N_LOCAL:,}<em>件</em></div><div class="k">九州・沖縄に限定された制度</div></div>
   <div><div class="n">{yen(max([r['max'] for r in OPEN] or [0]))}</div><div class="k">受付中の最大補助額</div></div>
 </div></div>
+
+{SEIKA}
 
 <section id="shindan" class="shindan"><div class="wrap">
   {sec_h("30 SECONDS","3つ選ぶだけ。自社が使える制度を絞り込む","県・目的・従業員規模を選ぶと、受付中の制度のなかから条件に合うものだけを表示します。メールアドレスの登録は不要です。")}
@@ -359,6 +434,7 @@ def build_index():
   <div class="chips">{industry_chips}</div>
 </div></section>
 
+{MUNI_SECTION}
 <section class="alt"><div class="wrap">
   {sec_h("BY AUDIENCE","対象者から探す","自社の形態から、対象になりうる制度を絞り込みます。",("すべて見る",U("audience/")))}
   {audience_chips}
@@ -380,7 +456,7 @@ def build_index():
 </div></section>
 
 <section class="alt"><div class="wrap">
-  {sec_h("EXPERTS","九州・沖縄の専門家が、申請まで伴走します","採択の可否を分けるのは制度選びより事業計画の書き方です。地場の士業と連携しています。",("専門家を見る",U("experts/")))}
+  {sec_h("EXPERTS","九州・沖縄の専門家が、申請まで伴走します","採択の可否を分けるのは制度選びより事業計画の書き方です。地場の士業と連携し、着手金0円の完全成果報酬で支援しています。",("申請支援を見る",U("experts/")))}
   <div class="experts">{EXPERT_TILES}</div>
 </div></section>
 {CTA}
@@ -392,7 +468,7 @@ def build_index():
     }, ensure_ascii=False) + '</script>')
     write("index.html", layout(
         f"九州・沖縄の補助金／助成金を探す【{TODAY.year}年最新・{N_OPEN}件受付中】｜{SITE_NAME}",
-        SITE_DESC + f"現在{N_OPEN}件が受付中（{TODAY_JP}時点）。",
+        SITE_DESC + f"現在{N_OPEN}件が受付中（{TODAY_JP}時点）。申請支援は着手金0円の完全成果報酬。",
         body, "", data_js=True, schema=schema))
 
 # ---------------------------------------------------------------- 専門家タイル
@@ -670,6 +746,16 @@ def build_prefs():
         chips = cards([(U("purpose/"+P_SLUG[p]+"/"+s+"/"), pur_icon(p), p.replace("したい","").replace("を行いたい","").replace("がほしい","").replace("を改善","改善"), c) for p,c in pc.most_common(8) if p in P_SLUG], "c4")
         others = "".join(f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" href="{U("pref/"+s2+"/")}">{n2}</a>'
                          for s2,n2,_,_ in PREFS if s2!=s)
+        mlist = MUNI_BY_PREF.get(n, [])
+        muni_block = ("" if not mlist else
+            '<section><div class="wrap">'
+            + sec_h("MUNICIPAL", n + "内の自治体が独自に行っている支援",
+                    f"国のオープンデータには載らない制度です。{n}の"
+                    f"{len([1 for k in MUNI_BY_CITY if k[0]==n])}自治体から{len(mlist)}件を収集しました。",
+                    ("市区町村の一覧", U("muni/")))
+            + cards([(U("muni/"+MUNI_SLUG[k]+"/"), "town", k[1], len(v))
+                     for k, v in MUNI_BY_CITY.items() if k[0] == n], "c4")
+            + muni_rows(mlist[:12]) + MUNI_NOTE + '</div></section>')
         body = f"""
 <div class="wrap">
 <div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>県から探す<span>/</span>{n}</div>
@@ -713,6 +799,7 @@ def build_prefs():
  <div style="padding-top:30px"><a class="more" href="{U('search/')}?pref={n}">{n}の全{len(rs):,}件を検索で見る →</a></div>
 </div></section>
 
+{muni_block}
 <section class="alt"><div class="wrap">
  {sec_h("OTHER PREFECTURES","ほかの県を見る")}
  <div>{others}</div>
@@ -864,26 +951,61 @@ def build_static():
             ("社会保険労務士","鹿児島県","食品製造の人材定着と処遇改善。"),
             ("税理士","沖縄県","沖縄振興特措法まわりの優遇と観光業の資金繰り。"),
         ])
-    page("experts","専門家に相談する",
-         "九州・沖縄の行政書士・中小企業診断士・社会保険労務士・税理士と連携し、補助金の申請を支援します。",
+    page("experts","申請支援（着手金0円・完全成果報酬）",
+         "九州・沖縄の補助金申請を着手金0円の完全成果報酬で支援します。採択されなければ費用は発生しません。",
          f"""
-<p>補助金で結果を分けるのは、制度選びよりも<strong>事業計画の書き方と、期日の管理</strong>です。{SITE_NAME}では、九州・沖縄各県の士業と連携し、要件の確認から申請書の作成、採択後の実績報告までを支援しています。</p>
-<h2>相談できること</h2>
+<div class="seika" style="margin:0 -9999px 40px;padding:44px 9999px 42px">
+  <div class="badge-row"><span class="bg1"><i></i>着手金・相談料 0円</span>
+  <span class="bg2">SUCCESS FEE ONLY</span></div>
+  <h2 style="font-size:clamp(24px,4vw,40px)">採択されなければ、<em>1円もいただきません。</em></h2>
+  <p class="lead" style="margin-bottom:0">制度選びから事業計画の作成、採択後の実績報告まで。
+  費用が発生するのは<b>採択が決まってから</b>だけです。</p>
+</div>
+
+<p>補助金で結果を分けるのは、制度選びよりも<strong>事業計画の書き方と、期日の管理</strong>です。
+九州・沖縄各県の行政書士・中小企業診断士・社会保険労務士・税理士と連携し、
+要件の確認から申請書の作成、採択後の実績報告までを一貫して支援します。</p>
+
+<h2>料金の考え方</h2>
+<table><tr><th>項目</th><th>費用</th></tr>
+<tr><td>初回相談・制度選び・要件確認</td><td><strong>0円</strong></td></tr>
+<tr><td>事業計画書の作成・申請代行</td><td><strong>0円</strong>（着手金なし）</td></tr>
+<tr><td>不採択だった場合</td><td><strong>0円</strong></td></tr>
+<tr><td>採択された場合</td><td>成功報酬のみ（料率は着手前に書面で提示）</td></tr>
+<tr><td>交付申請・実績報告の代行</td><td>ご希望に応じて別途お見積り</td></tr></table>
+<div class="note">成功報酬の料率は、制度の種類・補助額・作業範囲によって変わります。
+<strong>着手前にかならず書面でお見積りを提示し、ご納得いただいてから着手</strong>します。
+見積り後にお断りいただいても費用は発生しません。</div>
+
+<h2>ご相談から入金までの流れ</h2>
+<div class="flowline">
+  <div><div class="s">STEP 1</div><div class="t">無料相談<span class="free">0円</span></div>
+    <div class="d">県・業種・やりたいことをうかがい、使えそうな制度と概算スケジュールをご提示します。</div></div>
+  <div><div class="s">STEP 2</div><div class="t">要件確認とお見積り<span class="free">0円</span></div>
+    <div class="d">申請できるかを精査し、成功報酬の料率を書面で提示します。ここでお断りいただけます。</div></div>
+  <div><div class="s">STEP 3</div><div class="t">申請書の作成<span class="free">0円</span></div>
+    <div class="d">事業計画書・収支計画を一緒に作ります。加点要件の取得もこの段階で手当てします。</div></div>
+  <div><div class="s">STEP 4</div><div class="t">採択・お支払い</div>
+    <div class="d">採択が決まった時点で、はじめて成功報酬が発生します。以降の実績報告も支援できます。</div></div>
+</div>
+
+<h2>支援できること</h2>
 <table><tr><th>段階</th><th>支援内容</th></tr>
 <tr><td>制度選び</td><td>自社の投資計画に対して、どの制度が最も有利か。併用の可否</td></tr>
 <tr><td>要件確認</td><td>従業員数・業種・資本金・賃上げ要件などの適合判定</td></tr>
 <tr><td>申請書作成</td><td>事業計画書、収支計画、加点要件の取得</td></tr>
 <tr><td>資金繰り</td><td>後払いを前提としたつなぎ資金、金融機関との調整</td></tr>
 <tr><td>採択後</td><td>交付申請、実績報告、証憑整備、事業化状況報告</td></tr></table>
+
+<div class="note warn">補助金は後払いです。採択されても、設備代はいったん自社で立て替える必要があります。
+成功報酬のお支払い時期は、補助金の入金時期に合わせてご相談に応じます。</div>
+
 <h2>提携している専門家（分野・エリア）</h2>
 <div class="experts" style="margin:24px 0">{exp}</div>
-<div class="note">本ページは提携分野の一覧です。個別の事務所名・料金は、ご相談内容をうかがったうえでご案内します。着手金が発生する場合は、必ず事前にお見積りを提示します。</div>
-<h2>相談の流れ</h2>
-<ol><li>お問い合わせフォームから、県・業種・やりたいことを送信</li>
-<li>2営業日以内に、候補となる制度と概算のスケジュールを返信</li>
-<li>必要に応じて、担当する専門家をご紹介</li></ol>
-<p><a class="btn" href="{U('contact/')}">無料で相談する</a></p>
-""","専門家に相談")
+<div class="note">本ページは提携分野の一覧です。個別の事務所名は、ご相談内容をうかがったうえでご案内します。</div>
+
+<p style="margin-top:34px"><a class="btn" href="{U('contact/')}">無料で相談する</a></p>
+""","申請支援・完全成果報酬")
 
     page("about","運営について",
          "九州補助金ナビの運営方針とデータの出どころについて。",
@@ -924,6 +1046,9 @@ def build_static():
          "九州補助金ナビへのお問い合わせ・補助金の無料相談はこちらから。",
          f"""
 <p>補助金の相談、掲載内容の訂正、取材・提携のご依頼はこちらからお願いします。</p>
+<div class="note"><strong>申請支援は着手金0円・完全成果報酬です。</strong>
+制度選びと要件確認までは無料で、採択されなければ費用は発生しません。
+料率は着手前に書面でご提示します。→ <a href="{U('experts/')}">支援の中身と流れ</a></div>
 <h2>補助金の無料相談</h2>
 <p>以下をお知らせいただくと、回答が早くなります。</p>
 <ol><li>事業所のある県・市町村</li><li>業種</li><li>従業員数</li><li>やりたいこと（設備を入れたい／人を採りたい／販路を広げたい　など）</li><li>想定している投資額と時期</li></ol>
@@ -978,6 +1103,8 @@ def build_meta():
             "permit/", "ai/", "experts/", "about/", "contact/", "privacy/", "terms/"]
     urls += [f"pref/{s}/" for s,_,_,_ in PREFS]
     urls += [f"audience/{a[0]}/" for a in AUDIENCES]
+    if MUNI:
+        urls += ["muni/"] + [f"muni/{v}/" for v in MUNI_SLUG.values()]
     urls += [f"permit/{x[0]}/" for x in PERMITS]
     urls += [f"purpose/{P_SLUG[p]}/{s2}/" for p in PURPOSE_LIST for s2,n,_,_ in PREFS
              if [r for r in purpose_recs(p) if n in r["prefs"]]]
@@ -1678,12 +1805,104 @@ Apple カレンダー（macOS / iPhone）と Outlook では、購読時に
         "九州・沖縄8県の補助金の締切を、Googleカレンダー等に購読登録できます。締切前のリマインドと新着メール通知の設定手順つき。新着RSSもご用意。登録不要・無料。",
         body, "alerts/", data_js=True))
 
+# ================================================================ 市区町村の独自制度
+def muni_rows(ms, start=1):
+    if not ms:
+        return ('<div class="empty">この自治体の制度はまだ収集できていません。'
+                '公式サイトの案内をご確認ください。</div>')
+    out = []
+    for i, m in enumerate(ms, start):
+        left = (m["dl"] - TODAY).days if m["dl"] else None
+        tags = f'<span class="tag pref">{esc(m["muni"])}</span>'
+        if m["dl"]:
+            tags += (f'<span class="tag soon">締切まで{left}日</span>' if left is not None and left <= 30
+                     else '<span class="tag open">受付中</span>')
+        tags += '<span class="tag" style="border-color:var(--sky);color:var(--ai-2)">自治体独自</span>'
+        if m.get("dept"):
+            tags += f'<span class="tag">{esc(m["dept"])}</span>'
+        amt = yen(m["max"]) if m["max"] else "公式ページ参照"
+        rt = f'<div class="rt">補助率 {esc(m["rate"])}</div>' if m.get("rate") else ""
+        dl = ""
+        if m.get("deadline"):
+            dl = f'<div class="dl">締切 {esc(m["deadline"])}'
+            if left is not None and 0 <= left <= 60:
+                dl += f' <b>あと{left}日</b>'
+            dl += '</div>'
+        out.append(f'<a class="row" href="{esc(m["url"])}" target="_blank" rel="nofollow noopener">'
+                   f'<div class="no">{i:03d}</div>'
+                   f'<div><h3>{esc(m["title"])}</h3><div class="meta">{tags}</div></div>'
+                   f'<div class="amt"><small>補助上限</small>'
+                   f'<span style="font-size:{"19px" if m["max"] else "13px"}">{amt}</span>{rt}{dl}</div></a>')
+    return '<div class="rows">' + "".join(out) + '</div>'
+
+
+MUNI_NOTE = ('<div class="note">この一覧は各自治体の公式サイトから自動収集したものです。'
+             'タイトルをクリックすると公式ページが開きます。'
+             '金額・補助率・締切はページ本文から機械的に読み取っているため、'
+             '取得できていない項目や、最新でない場合があります。'
+             '申請前にかならず公式ページと担当課でご確認ください。</div>')
+
+
+def build_municipal():
+    if not MUNI:
+        return
+    cities = sorted(MUNI_BY_CITY.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+    items = [(U("muni/" + MUNI_SLUG[(p, m)] + "/"), "town", m, len(v)) for (p, m), v in cities]
+    body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
+            f'市区町村の独自制度</div></div>'
+            f'<section><div class="wrap">'
+            + sec_h("MUNICIPAL", "市区町村・県の独自制度",
+                    f"国のオープンデータ（jGrants）には登録されない、自治体が単独で行っている支援です。"
+                    f"九州・沖縄の {N_MUNI_CITY} 自治体から {N_MUNI:,} 件を収集しました（{TODAY_JP}時点）。")
+            + cards(items, "c4") + MUNI_NOTE + '</div></section>'
+            f'<section class="alt"><div class="wrap">'
+            + sec_h("ALL", "収集した制度（締切が近い順）") + muni_rows(MUNI[:40])
+            + '</div></section>' + CTA)
+    write("muni/index.html", layout(
+        f"市区町村の独自補助金【{N_MUNI_CITY}自治体・{N_MUNI:,}件】｜{SITE_NAME}",
+        f"福岡市・北九州市・久留米市・熊本市・那覇市など、九州・沖縄{N_MUNI_CITY}自治体が単独で実施している"
+        f"補助金・助成金を{N_MUNI:,}件掲載。国のjGrantsには載らない地元の制度です。",
+        body, "muni/"))
+
+    for (pref, name), ms in cities:
+        slug = MUNI_SLUG[(pref, name)]
+        pslug = PREF_BY_NAME[pref][0]
+        others = "".join(
+            f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" '
+            f'href="{U("muni/" + MUNI_SLUG[(p2, m2)] + "/")}">{m2}</a>'
+            for (p2, m2), _ in cities if p2 == pref and m2 != name)
+        jg = [r for r in RECS if r["status"] == "open" and name in (r["title"] + r["area_detail"])]
+        body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
+                f'<a href="{U("muni/")}">市区町村の独自制度</a><span>/</span>{name}</div></div>'
+                f'<section><div class="wrap">'
+                + sec_h("MUNICIPAL", name + "の独自補助金・助成金",
+                        f"{name}が単独で実施している事業者向けの支援を、公式サイトから {len(ms)} 件収集しました"
+                        f"（{TODAY_JP}時点）。国のjGrantsには登録されていない制度が中心です。")
+                + muni_rows(ms) + MUNI_NOTE + '</div></section>'
+                + (f'<section class="alt"><div class="wrap">'
+                   + sec_h("JGRANTS", f"{name}が対象の、国のオープンデータ掲載制度")
+                   + rows(jg[:10]) + '</div></section>' if jg else "")
+                + ('<section><div class="wrap">' if jg else '<section class="alt"><div class="wrap">')
+                + sec_h("NEARBY", f"{pref}のほかの自治体") + (others or "—")
+                + f'<div style="margin-top:22px"><a class="more" href="{U("pref/" + pslug + "/")}">'
+                  f'{pref}の補助金をすべて見る →</a></div></div></section>' + CTA)
+        write(f"muni/{slug}/index.html", layout(
+            f"{name}の補助金・助成金【独自制度{len(ms)}件】｜{SITE_NAME}",
+            f"{name}が単独で実施している事業者向けの補助金・助成金を{len(ms)}件掲載。"
+            f"公式ページへのリンク・担当課・締切つき。",
+            body, f"muni/{slug}/"))
 # ================================================================ 共有データ / OGP画像
 def build_data():
     payload = [{"i":r["id"],"t":r["title"],"p":r["prefs"],"m":r["max"],"r":r["rate"],
                 "d":(r["end"] or "")[:10],"s":(r["start"] or "")[:10],"st":r["status"],
                 "u":r["purpose"],"g":r["industry"],"e":r["emp"],"n":r["inst"],
                 "w":1 if r["nationwide"] else 0} for r in RECS]
+    # 市区町村の独自制度も同じ形に揃えて載せる（x=1 は外部リンク）
+    for m in MUNI:
+        payload.append({"i": "", "t": m["title"], "p": [m["pref"]], "m": m["max"], "r": m.get("rate",""),
+                        "d": (m["dl"].isoformat() if m["dl"] else ""), "s": "", "st": m["status"],
+                        "u": "", "g": "", "e": "", "n": m["muni"] + (" " + m["dept"] if m.get("dept") else ""),
+                        "w": 0, "x": 1, "h": m["url"], "mu": m["muni"]})
     write("assets/data.json", json.dumps(payload, ensure_ascii=False, separators=(",",":")))
 
 _OG_FONTS = ["/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
@@ -1755,8 +1974,9 @@ if __name__ == "__main__":
     build_index(); build_prefs(); build_taxonomy(); build_search()
     build_guides(); build_audience(); build_permits(); build_ai()
     build_static(); build_subsidies(); build_cross()
-    build_alerts(); build_feeds(); build_data(); build_og(); build_meta()
+    build_municipal(); build_alerts(); build_feeds(); build_data(); build_og(); build_meta()
     n = sum(len(f) for _, _, f in os.walk(OUT))
     print(f"built {n} files -> {OUT}")
     print(f"records={N_ALL} open={N_OPEN} local={N_LOCAL} purposes={len(PURPOSE_LIST)} "
-          f"industries={len(INDUSTRY_LIST)} audiences={len(AUDIENCES)} permits={len(PERMITS)}")
+          f"industries={len(INDUSTRY_LIST)} audiences={len(AUDIENCES)} permits={len(PERMITS)} "
+          f"municipal={N_MUNI}/{N_MUNI_CITY}自治体")

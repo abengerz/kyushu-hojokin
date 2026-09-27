@@ -58,7 +58,7 @@
       load().then(function (D) {
         var out = document.getElementById('sd-out');
         var hits = D.filter(function (r) {
-          if (r.st === 'closed') return false;
+          if (r.st === 'closed' || r.x) return false;
           if (pick.pref && r.p.indexOf(pick.pref) < 0) return false;
           if (pick.purpose && (r.u || '').indexOf(pick.purpose) < 0) return false;
           if (pick.size && r.e && r.e.indexOf('制約なし') < 0 && r.e.indexOf(pick.size) < 0) return false;
@@ -120,10 +120,13 @@
         var badge = r.st === 'open'
           ? (left !== null && left <= 30 ? '<span class="tag soon">締切まで' + left + '日</span>' : '<span class="tag open">受付中</span>')
           : r.st === 'soon' ? '<span class="tag soon">受付予定</span>' : '<span class="tag closed">受付終了</span>';
-        h += '<a class="row" href="' + B + '/subsidy/' + r.i + '/">' +
+        var href = r.x ? r.h : (B + '/subsidy/' + r.i + '/');
+        var ext = r.x ? ' target="_blank" rel="nofollow noopener"' : '';
+        h += '<a class="row" href="' + href + '"' + ext + '>' +
           '<div class="no">' + String((page - 1) * PER + k + 1).padStart(3, '0') + '</div>' +
           '<div><h3>' + esc(r.t) + '</h3><div class="meta">' + badge +
           (r.w ? '<span class="tag">全国対象</span>' : r.p.slice(0, 4).map(function (x) { return '<span class="tag pref">' + x + '</span>'; }).join('')) +
+          (r.x ? '<span class="tag pref">' + esc(r.mu) + '</span><span class="tag" style="border-color:var(--sky);color:var(--ai-2)">自治体独自</span>' : '') +
           (r.u ? '<span class="tag">' + esc(r.u.split(' / ')[0]) + '</span>' : '') + '</div></div>' +
           '<div class="amt"><small>補助上限</small>' + yen(r.m) +
           (r.r ? '<div class="rt">補助率 ' + esc(r.r) + '</div>' : '') +
@@ -304,8 +307,10 @@
 
   function cardHTML(r) {
     var left = daysLeft(r.d);
-    return '<a class="card" href="' + B + '/subsidy/' + r.i + '/"><b>' + esc(r.t) + '</b><span>' +
-      (r.w ? '全国対象' : r.p.slice(0, 3).join('・')) + '　上限 ' + yen(r.m) +
+    var href = r.x ? r.h : (B + '/subsidy/' + r.i + '/');
+    var ext = r.x ? ' target="_blank" rel="nofollow noopener"' : '';
+    return '<a class="card" href="' + href + '"' + ext + '><b>' + esc(r.t) + '</b><span>' +
+      (r.x ? r.mu + '（自治体独自）' : (r.w ? '全国対象' : r.p.slice(0, 3).join('・'))) + '　上限 ' + yen(r.m) +
       (r.d ? '　締切 ' + jday(r.d) + (left !== null && left >= 0 ? '（あと' + left + '日）' : '') : '') + '</span></a>';
   }
 

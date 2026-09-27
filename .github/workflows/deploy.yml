@@ -6,6 +6,8 @@ on:
   schedule:
     # 毎日 JST 6:00（UTC 21:00）に jGrants から最新データを取り直して再公開
     - cron: "0 21 * * *"
+    # 自治体サイトの巡回は負荷が大きいので週1回（日曜 JST 5:00）
+    - cron: "0 20 * * 0"
   workflow_dispatch:
 
 permissions:
@@ -36,6 +38,16 @@ jobs:
       - name: Refresh data from jGrants (scheduled / manual only)
         if: github.event_name != 'push'
         run: python fetch.py
+
+      - name: Refresh municipal data (weekly)
+        if: github.event.schedule == '0 20 * * 0' || github.event_name == 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          MUNI_MAX_PAGES: "240"
+          MUNI_MAX_DEPTH: "3"
+          MUNI_DELAY: "0.8"
+          MUNI_WORKERS: "4"
+        run: python municipal.py
 
       - name: Deadline alert digest (scheduled / manual only)
         if: github.event_name != 'push'
