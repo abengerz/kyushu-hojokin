@@ -1,0 +1,61 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 毎日 JST 6:00（UTC 21:00）に jGrants から最新データを取り直して再公開
+    - cron: "0 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Refresh data from jGrants (scheduled / manual only)
+        if: github.event_name != 'push'
+        run: python fetch.py
+
+      - name: Commit refreshed data
+        if: github.event_name != 'push'
+        continue-on-error: true
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --staged --quiet || git commit -m "chore: refresh jGrants data ($(date -u +%Y-%m-%d))"
+          git push
+
+      - name: Build site
+        env:
+          KH_BASE: ${{ vars.KH_BASE }}
+          KH_BASE_URL: ${{ vars.KH_BASE_URL }}
+        run: python build.py
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
