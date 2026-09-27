@@ -26,6 +26,13 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install build deps (OGP画像の生成に使用)
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet pillow
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq fonts-noto-cjk
+
       - name: Refresh data from jGrants (scheduled / manual only)
         if: github.event_name != 'push'
         run: python fetch.py

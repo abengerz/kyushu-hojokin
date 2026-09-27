@@ -147,19 +147,15 @@ MARK = ('<svg class="mark" viewBox="0 0 32 32" aria-hidden="true">'
         '<rect x="1" y="26.5" width="6" height="4.5" fill="#2E7C86"/>'
         '<rect x="9" y="26.5" width="8" height="4.5" fill="#12384F" opacity=".4"/></svg>')
 
-NAV = [("補助金を探す","search/"),("県から探す","#pref"),("目的から探す","#purpose"),
-       ("制度ガイド","guide/"),("専門家に相談","experts/")]
+NAV = [("補助金を探す","search/"),("県から探す","#pref"),("目的から探す","purpose/"),
+       ("対象者から","audience/"),("制度ガイド","guide/"),("許認可","permit/"),("AI相談","ai/")]
 
-def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False, schema=""):
+def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False, schema="", with_ai=True):
     canon = (BASE_URL + U(path)) if BASE_URL else ""
     nav = "".join(f'<a href="{U(h) if not h.startswith("#") else (U()+h)}">{t}</a>' for t,h in NAV)
     top_prefs = "".join(f'<a href="{U("pref/"+s+"/")}">{n}</a>' for s,n,_,_ in PREFS)
-    dj = ""
-    if data_js:
-        payload = [{"i":r["id"],"t":r["title"],"p":r["prefs"],"m":r["max"],
-                    "d":(r["end"] or "")[:10],"s":(r["start"] or "")[:10],"st":r["status"],
-                    "u":r["purpose"],"g":r["industry"],"e":r["emp"],"n":r["inst"]} for r in RECS]
-        dj = "<script>window.KH_DATA=" + json.dumps(payload, ensure_ascii=False, separators=(",",":")) + ";</script>"
+    dj = '<script>window.KH_EAGER=' + ("1" if data_js else "0") + ';</script>'
+    AI_SLOT = ai_widget() if with_ai else ""
     return f"""<!DOCTYPE html>
 <html lang="ja"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -170,6 +166,8 @@ def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False
 <meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(desc)}">
 {f'<meta property="og:url" content="{canon}">' if canon else ''}
 <meta name="twitter:card" content="summary_large_image">
+<meta property="og:image" content="{(BASE_URL or '') + U('assets/og.png')}">
+<meta name="twitter:image" content="{(BASE_URL or '') + U('assets/og.png')}">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{U('assets/style.css')}">
@@ -195,14 +193,17 @@ def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False
     </div>
     <div><h4>探す</h4><ul>
       <li><a href="{U('search/')}">全制度を検索</a></li>
+      <li><a href="{U('ai/')}">補助金AI相談</a></li>
       <li><a href="{U('deadline/')}">締切カレンダー</a></li>
       <li><a href="{U('purpose/')}">目的から探す</a></li>
       <li><a href="{U('industry/')}">業種から探す</a></li>
+      <li><a href="{U('audience/')}">対象者から探す</a></li>
     </ul></div>
     <div><h4>県から探す</h4><ul>{''.join(f'<li><a href="{U("pref/"+s+"/")}">{n}の補助金</a></li>' for s,n,_,_ in PREFS[:4])}
       {''.join(f'<li><a href="{U("pref/"+s+"/")}">{n}の補助金</a></li>' for s,n,_,_ in PREFS[4:])}</ul></div>
     <div><h4>サイト情報</h4><ul>
       <li><a href="{U('guide/')}">制度ガイド</a></li>
+      <li><a href="{U('permit/')}">許認可・届出ガイド</a></li>
       <li><a href="{U('experts/')}">専門家に相談</a></li>
       <li><a href="{U('about/')}">運営について</a></li>
       <li><a href="{U('contact/')}">お問い合わせ</a></li>
@@ -215,7 +216,8 @@ def layout(title, desc, body, path="", extra_head="", extra_js="", data_js=False
     <span>出典：経済産業省 jGrants 補助金電子申請システム 公開API（デジタル庁）</span>
   </div>
 </div></footer>
-<script>window.KH_BASE="{BASE}";</script>
+{AI_SLOT}
+<script>window.KH_BASE="{BASE}";window.KH_DATA_URL="{U('assets/data.json')}";</script>
 {dj}
 <script src="{U('assets/app.js')}"></script>{extra_js}
 </body></html>"""
@@ -242,11 +244,16 @@ def row(r, i):
         metas += "".join(f'<span class="tag pref">{p}</span>' for p in r["prefs"][:4])
     fp = (r["purpose"].split("/")[0] or "").strip()
     if fp: metas += f'<span class="tag">{esc(fp)}</span>'
-    dl = f'<div class="dl">締切 {jd(r["end"])}</div>' if r["end"] else ""
+    dl = ""
+    if r["end"]:
+        left = (r["dl"] - TODAY).days if r["dl"] else None
+        tail = f' <b>あと{left}日</b>' if (left is not None and 0 <= left <= 60) else ""
+        dl = f'<div class="dl">締切 {jd(r["end"])}{tail}</div>'
+    rt = f'<div class="rt">補助率 {esc(r["rate"])}</div>' if r["rate"] else ""
     return (f'<a class="row" href="{U("subsidy/"+r["id"]+"/")}">'
             f'<div class="no">{i:03d}</div>'
             f'<div><h3>{esc(r["title"])}</h3><div class="meta">{metas}</div></div>'
-            f'<div class="amt"><small>補助上限</small>{yen(r["max"])}{dl}</div></a>')
+            f'<div class="amt"><small>補助上限</small>{yen(r["max"])}{rt}{dl}</div></a>')
 
 def rows(rs, start=1):
     if not rs: return '<div class="empty">該当する制度は見つかりませんでした。</div>'
@@ -265,39 +272,20 @@ CTA = f"""<div class="cta"><div class="wrap narrow">
 <a class="btn ghost" href="{U('experts/')}">提携専門家を見る</a>
 </div></div></div>"""
 
-# ---------------------------------------------------------------- タイルマップ
-TILE = {"fukuoka":(112,4),"saga":(4,66),"oita":(220,66),
-        "nagasaki":(4,128),"kumamoto":(112,128),"miyazaki":(220,128),
-        "kagoshima":(112,190),"okinawa":(4,262)}
-def tilemap():
-    cells = []
-    for s,n,en,_ in PREFS:
-        x,y = TILE[s]; c = len(pref_recs(n)); o = len([r for r in pref_recs(n) if r["status"]=="open"]); lo = len(pref_local(n))
-        cells.append(
-            f'<a class="cell{" oki" if s=="okinawa" else ""}" href="{U("pref/"+s+"/")}" aria-label="{n}の補助金 {c}件">'
-            f'<rect x="{x}" y="{y}" width="100" height="54"/>'
-            f'<text class="pn" x="{x+50}" y="{y+24}" text-anchor="middle">{n[:-1]}</text>'
-            f'<text class="pc" x="{x+50}" y="{y+41}" text-anchor="middle">受付中 {o}件</text></a>')
-    return (f'<svg class="tilemap" viewBox="0 0 324 330" role="img" aria-label="九州・沖縄8県マップ">'
-            f'<line x1="4" y1="256" x2="320" y2="256" stroke="rgba(23,26,28,.2)" stroke-dasharray="2 4"/>'
-            f'<text x="320" y="250" text-anchor="end" font-size="9" letter-spacing="1.5" fill="rgba(23,26,28,.35)" '
-            f'font-family="Noto Sans JP" font-weight="700">SOUTHWEST ISLANDS</text>'
-            + "".join(cells) + '</svg>')
-
 # ---------------------------------------------------------------- トップページ
 def build_index():
     near = sorted([r for r in OPEN if r["dl"]], key=lambda r: r["dl"])[:8]
     big  = sorted(OPEN, key=lambda r: -(r["max"] or 0))[:6]
-    purpose_chips = "".join(
-        f'<a href="{U("purpose/"+P_SLUG[p]+"/")}">{esc(p)}<span class="c">{PURPOSES[p]}</span></a>'
-        for p in PURPOSE_LIST[:12])
-    industry_chips = "".join(
-        f'<a href="{U("industry/"+I_SLUG[p]+"/")}">{esc(p)}<span class="c">{INDUSTRIES[p]}</span></a>'
-        for p in INDUSTRY_LIST[:12])
+    purpose_chips = cards([(U("purpose/"+P_SLUG[p]+"/"), pur_icon(p), p.replace("したい","").replace("を行いたい","").replace("がほしい","").replace("を改善","改善"), PURPOSES[p]) for p in PURPOSE_LIST[:12]])
+    industry_chips = cards([(U("industry/"+I_SLUG[p]+"/"), ind_icon(p), p.split("、")[0].replace("業（他に分類されないもの）","業"), INDUSTRIES[p]) for p in INDUSTRY_LIST[:12]])
+    audience_chips = cards([(U("audience/"+a[0]+"/"), a[3], a[1], len([r for r in RECS if a[5](r)])) for a in AUDIENCES], "c4")
+    permit_chips = cards([(U("permit/"+x[0]+"/"), x[3], x[1], len(x[5])) for x in PERMITS], "c4")
     prefcards = "".join(
-        f'<a href="{U("pref/"+s+"/")}"><div class="pn">{n}</div><div class="pr">{en}</div>'
-        f'<div class="pd">{d}</div>'
-        f'<div class="pnum">{len(pref_recs(n))}<em>件</em>　受付中 {len([r for r in pref_recs(n) if r["status"]=="open"])}<em>件</em></div></a>'
+        f'<a href="{U("pref/"+s+"/")}">{pref_thumb(s)}'
+        f'<div><div class="pn">{n}</div><div class="pr">{en}</div>'
+        f'<div class="pnum">受付中 {len([r for r in pref_recs(n) if r["status"]=="open"])}<em>件</em>'
+        f'　/　掲載 {len(pref_recs(n))}<em>件</em></div></div>'
+        f'<div class="pd">{d}</div></a>'
         for s,n,en,d in PREFS)
 
     sd_pref = "".join(f'<button data-v="{n}">{n[:-1]}</button>' for _,n,_,_ in PREFS)
@@ -305,11 +293,13 @@ def build_index():
     sd_size = "".join(f'<button data-v="{e}">{e}</button>' for e in ["5名以下","20名以下","50名以下","100名以下","300名以下"])
 
     guides_html = "".join(
-        f'<a href="{U("guide/"+g["slug"]+"/")}"><article><div class="gk">{g["kicker"]}</div>'
-        f'<h3>{esc(g["title"])}</h3><p>{esc(g["lead"])}</p></article></a>' for g in GUIDES[:6])
+        f'<a href="{U("guide/"+g["slug"]+"/")}"><article>{guide_eye(i, i)}<div class="gb">'
+        f'<div class="gk">{g["kicker"]}</div>'
+        f'<h3>{esc(g["title"])}</h3><p>{esc(g["lead"])}</p></div></article></a>'
+        for i, g in enumerate(GUIDES[:6]))
 
     body = f"""
-<div class="hero"><div class="wrap">
+<div class="hero">{HERO_ART}<div class="wrap">
   <div>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
     <h1 class="hero-t"><span class="sm">福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄</span>
@@ -320,7 +310,7 @@ def build_index():
       <a class="btn ghost" href="{U()}#shindan">30秒で自社向けを絞り込む</a>
     </div>
   </div>
-  <div>{tilemap()}</div>
+  <div>{kmap()}</div>
 </div></div>
 
 <div class="ledger"><div class="wrap">
@@ -356,6 +346,16 @@ def build_index():
 <section class="alt" id="industry"><div class="wrap">
   {sec_h("BY INDUSTRY","業種から探す","日本標準産業分類ベース。自社の業種が対象に含まれる制度だけを表示します。",("すべて見る",U("industry/")))}
   <div class="chips">{industry_chips}</div>
+</div></section>
+
+<section><div class="wrap">
+  {sec_h("BY AUDIENCE","対象者から探す","自社の形態から、対象になりうる制度を絞り込みます。",("すべて見る",U("audience/")))}
+  {audience_chips}
+</div></section>
+
+<section class="alt"><div class="wrap">
+  {sec_h("PERMITS","許認可・届出ガイド","補助金の前に、まず事業を始める許可が要ります。業種別にまとめました。",("すべて見る",U("permit/")))}
+  {permit_chips}
 </div></section>
 
 <section><div class="wrap">
@@ -656,21 +656,21 @@ def build_prefs():
         pc = collections.Counter()
         for r in rs:
             for p in [x.strip() for x in r["purpose"].split("/") if x.strip()]: pc[p]+=1
-        chips = "".join(f'<a href="{U("search/")}?pref={n}&purpose={p}">{esc(p)}<span class="c">{c}</span></a>' for p,c in pc.most_common(8))
+        chips = cards([(U("purpose/"+P_SLUG[p]+"/"+s+"/"), pur_icon(p), p.replace("したい","").replace("を行いたい","").replace("がほしい","").replace("を改善","改善"), c) for p,c in pc.most_common(8) if p in P_SLUG], "c4")
         others = "".join(f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" href="{U("pref/"+s2+"/")}">{n2}</a>'
                          for s2,n2,_,_ in PREFS if s2!=s)
         body = f"""
 <div class="wrap">
 <div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>県から探す<span>/</span>{n}</div>
 </div>
-<div class="hero"><div class="wrap">
+<div class="hero">{HERO_ART}<div class="wrap">
  <div>
   <p class="eyebrow">{en} / {len(rs)} PROGRAMS</p>
   <h1 class="hero-t">{n}の<br><span class="u">補助金・助成金</span>一覧</h1>
   <p class="lead">{d}<br>{n}の事業者が対象になる制度を、国のオープンデータから{len(rs):,}件収集しました。うち{len(op)}件が現在受付中です（{TODAY_JP}時点）。</p>
   <div class="hero-cta"><a class="btn" href="{U('search/')}?pref={n}">{n}の制度を検索する</a></div>
  </div>
- <div>{tilemap()}</div>
+ <div>{kmap(s)}</div>
 </div></div>
 <div class="ledger"><div class="wrap">
  <div><div class="n">{len(rs):,}<em>件</em></div><div class="k">{n}が対象の制度</div></div>
@@ -686,7 +686,7 @@ def build_prefs():
 
 <section class="alt"><div class="wrap">
  {sec_h("BY PURPOSE","{}で、目的から絞り込む".format(n))}
- <div class="chips">{chips}</div>
+ {chips}
 </div></section>
 
 <section><div class="wrap">
@@ -707,39 +707,39 @@ def build_prefs():
 
 # ---------------------------------------------------------------- 目的/業種
 def build_taxonomy():
-    chips = "".join(f'<a href="{U("purpose/"+P_SLUG[p]+"/")}">{esc(p)}<span class="c">{PURPOSES[p]}</span></a>' for p in PURPOSE_LIST)
+    chips = cards([(U("purpose/"+P_SLUG[p]+"/"), pur_icon(p), p.replace("したい","").replace("を行いたい","").replace("がほしい","").replace("を改善","改善"), PURPOSES[p]) for p in PURPOSE_LIST], "c4")
     write("purpose/index.html", layout(f"目的から補助金を探す｜{SITE_NAME}",
         "設備投資、人材育成、販路拡大など、やりたいことから九州・沖縄の補助金を逆引きします。",
         f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>目的から探す</div></div>'
         f'<section><div class="wrap">{sec_h("BY PURPOSE","目的から補助金・助成金を探す","やりたいことを選ぶと、九州・沖縄8県が対象の制度だけが表示されます。")}'
-        f'<div class="chips">{chips}</div></div></section>{CTA}', "purpose/"))
+        f'{chips}</div></section>{CTA}', "purpose/"))
     for p in PURPOSE_LIST:
         rs = purpose_recs(p); op=[r for r in rs if r["status"]=="open"]
-        pb = "".join(f'<a href="{U("search/")}?purpose={p}&pref={n}">{n}<span class="c">{len([r for r in rs if n in r["prefs"]])}</span></a>' for _,n,_,_ in PREFS)
+        pb = cards([(U("purpose/"+P_SLUG[p]+"/"+s2+"/"), "search", n, len([r for r in rs if n in r["prefs"]])) for s2,n,_,_ in PREFS], "c4")
         body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
                 f'<a href="{U("purpose/")}">目的から探す</a><span>/</span>{esc(p)}</div></div>'
                 f'<section><div class="wrap">{sec_h("BY PURPOSE", esc(p)+"ときに使える補助金", f"九州・沖縄8県が対象の{len(rs):,}件から抽出。うち受付中{len(op)}件（{TODAY_JP}時点）。")}'
                 f'{rows(op[:30] or rs[:20])}'
-                f'<div style="padding-top:34px">{sec_h("BY PREFECTURE","県で絞り込む")}<div class="chips">{pb}</div></div>'
+                f'<div style="padding-top:34px">{sec_h("BY PREFECTURE","県で絞り込む")}{pb}</div>'
                 f'</div></section>{CTA}')
         write(f"purpose/{P_SLUG[p]}/index.html", layout(
             f"{p}｜九州・沖縄の補助金{len(rs)}件【受付中{len(op)}件】｜{SITE_NAME}",
             f"「{p}」に該当する九州・沖縄の補助金・助成金を{len(rs)}件掲載。受付中{len(op)}件。", body, f"purpose/{P_SLUG[p]}/"))
 
-    ichips = "".join(f'<a href="{U("industry/"+I_SLUG[p]+"/")}">{esc(p)}<span class="c">{INDUSTRIES[p]}</span></a>' for p in INDUSTRY_LIST)
+    ichips = cards([(U("industry/"+I_SLUG[p]+"/"), ind_icon(p), p.split("、")[0].replace("業（他に分類されないもの）","業"), INDUSTRIES[p]) for p in INDUSTRY_LIST], "c4")
     write("industry/index.html", layout(f"業種から補助金を探す｜{SITE_NAME}",
         "製造業・建設業・宿泊飲食・農林水産など、業種別に九州・沖縄の補助金を探せます。",
         f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>業種から探す</div></div>'
         f'<section><div class="wrap">{sec_h("BY INDUSTRY","業種から補助金・助成金を探す","日本標準産業分類にもとづく区分です。")}'
-        f'<div class="chips">{ichips}</div></div></section>{CTA}', "industry/"))
+        f'{ichips}</div></section>{CTA}', "industry/"))
     for p in INDUSTRY_LIST:
         rs = industry_recs(p); op=[r for r in rs if r["status"]=="open"]
-        pb = "".join(f'<a href="{U("search/")}?industry={p}&pref={n}">{n}<span class="c">{len([r for r in rs if n in r["prefs"]])}</span></a>' for _,n,_,_ in PREFS)
+        pb = cards([(U("industry/"+I_SLUG[p]+"/"+s2+"/"), "search", n, len([r for r in rs if n in r["prefs"]])) for s2,n,_,_ in PREFS], "c4")
         body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
                 f'<a href="{U("industry/")}">業種から探す</a><span>/</span>{esc(p)}</div></div>'
                 f'<section><div class="wrap">{sec_h("BY INDUSTRY", esc(p)+"が使える補助金", f"九州・沖縄8県が対象で、{p}を対象業種に含む制度は{len(rs):,}件。うち受付中{len(op)}件。")}'
                 f'{rows(op[:30] or rs[:20])}'
-                f'<div style="padding-top:34px">{sec_h("BY PREFECTURE","県で絞り込む")}<div class="chips">{pb}</div></div>'
+                f'<div style="padding-top:34px">{sec_h("BY PREFECTURE","県で絞り込む")}{pb}</div>'
                 f'</div></section>{CTA}')
         write(f"industry/{I_SLUG[p]}/index.html", layout(
             f"{p}の補助金・助成金【九州・沖縄／受付中{len(op)}件】｜{SITE_NAME}",
@@ -785,19 +785,22 @@ def build_search():
 
 # ---------------------------------------------------------------- ガイド
 def build_guides():
-    cards = "".join(
-        f'<a href="{U("guide/"+g["slug"]+"/")}"><article><div class="gk">{g["kicker"]}</div>'
-        f'<h3>{esc(g["title"])}</h3><p>{esc(g["lead"])}</p></article></a>' for g in GUIDES)
+    gcards = "".join(
+        f'<a href="{U("guide/"+g["slug"]+"/")}"><article>{guide_eye(i, i)}<div class="gb">'
+        f'<div class="gk">{g["kicker"]}</div>'
+        f'<h3>{esc(g["title"])}</h3><p>{esc(g["lead"])}</p></div></article></a>'
+        for i, g in enumerate(GUIDES))
     write("guide/index.html", layout(f"制度ガイド｜九州・沖縄の補助金の使い方｜{SITE_NAME}",
         "持続化補助金・ものづくり補助金・IT導入補助金など、九州・沖縄の事業者向けに制度の使い方と申請実務を解説します。",
         f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>制度ガイド</div></div>'
         f'<section><div class="wrap">{sec_h("GUIDES","制度ガイド","制度そのものの説明よりも、九州・沖縄の事業者が実際につまずく箇所を中心にまとめています。")}'
-        f'<div class="guides">{cards}</div></div></section>{CTA}', "guide/"))
+        f'<div class="guides">{gcards}</div></div></section>{CTA}', "guide/"))
     for i,g in enumerate(GUIDES):
         others = "".join(
-            f'<a href="{U("guide/"+x["slug"]+"/")}"><article><div class="gk">{x["kicker"]}</div>'
-            f'<h3>{esc(x["title"])}</h3><p>{esc(x["lead"])}</p></article></a>'
-            for x in (GUIDES[i+1:]+GUIDES[:i])[:3])
+            f'<a href="{U("guide/"+x["slug"]+"/")}"><article>{guide_eye(j+i+1, j+i+1)}<div class="gb">'
+            f'<div class="gk">{x["kicker"]}</div>'
+            f'<h3>{esc(x["title"])}</h3><p>{esc(x["lead"])}</p></div></article></a>'
+            for j, x in enumerate((GUIDES[i+1:]+GUIDES[:i])[:3]))
         body = f"""
 <div class="wrap narrow">
 <div class="crumbs"><a href="{U()}">ホーム</a><span>/</span><a href="{U('guide/')}">制度ガイド</a><span>/</span>{esc(g['kicker'])}</div>
@@ -940,8 +943,15 @@ def build_static():
 
 # ---------------------------------------------------------------- sitemap
 def build_meta():
-    urls = ["", "search/", "deadline/", "guide/", "purpose/", "industry/", "experts/", "about/", "contact/", "privacy/", "terms/"]
+    urls = ["", "search/", "deadline/", "guide/", "purpose/", "industry/", "audience/", "permit/",
+            "ai/", "experts/", "about/", "contact/", "privacy/", "terms/"]
     urls += [f"pref/{s}/" for s,_,_,_ in PREFS]
+    urls += [f"audience/{a[0]}/" for a in AUDIENCES]
+    urls += [f"permit/{x[0]}/" for x in PERMITS]
+    urls += [f"purpose/{P_SLUG[p]}/{s2}/" for p in PURPOSE_LIST for s2,n,_,_ in PREFS
+             if [r for r in purpose_recs(p) if n in r["prefs"]]]
+    urls += [f"industry/{I_SLUG[p]}/{s2}/" for p in INDUSTRY_LIST for s2,n,_,_ in PREFS
+             if len([r for r in industry_recs(p) if n in r["prefs"]]) >= 3]
     urls += [f"guide/{g['slug']}/" for g in GUIDES]
     urls += [f"purpose/{P_SLUG[p]}/" for p in PURPOSE_LIST]
     urls += [f"industry/{I_SLUG[p]}/" for p in INDUSTRY_LIST]
@@ -952,13 +962,545 @@ def build_meta():
     write("robots.txt", f"User-agent: *\nAllow: /\n" + (f"Sitemap: {root}{U('sitemap.xml')}\n" if root else ""))
     write(".nojekyll", "")
 
+
+# ================================================================ アイコン
+_I = {
+"factory":"M3 20h18M4 20v-9l5 3v-3l5 3V7l6 4v9M8 20v-3h3v3",
+"helmet":"M4 18h16M5 18a7 7 0 0 1 14 0M9.5 5.5A6.9 6.9 0 0 1 12 5c.9 0 1.7.2 2.5.5M12 5V2.6M8 11V7M16 11V7",
+"chip":"M8 8h8v8H8zM10 8V4.5M14 8V4.5M10 19.5V16M14 19.5V16M8 10H4.5M8 14H4.5M19.5 10H16M19.5 14H16",
+"cart":"M3 4h2l2.3 10.7a2 2 0 0 0 2 1.6h7.5a2 2 0 0 0 2-1.5L21 8H6M10 20.5h.01M18 20.5h.01",
+"food":"M5 3v6a2 2 0 0 0 4 0V3M7 11v10M16.5 3c-1.4 1.6-2 3.6-2 5.6 0 1.9 1 3.4 2.5 3.4H19V3h-2.5zM18 12v9",
+"heart":"M12 20.3S4.5 15.6 4.5 10.5A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7.5 2.5c0 5.1-7.5 9.8-7.5 9.8z",
+"sprout":"M12 21v-7.5M12 13.5c0-3.2 2.2-5.3 5.3-5.3 0 3.2-2.1 5.3-5.3 5.3zM12 13.5c0-3.2-2.2-5.3-5.3-5.3 0 3.2 2.1 5.3 5.3 5.3zM12 6V3",
+"fish":"M3.5 12c3-4.3 6.9-5.5 9.8-5.5 4 0 6.9 2.2 7.7 5.5-.8 3.3-3.7 5.5-7.7 5.5-2.9 0-6.8-1.2-9.8-5.5zM17.5 10.8h.01M3.5 12 1.6 8.2M3.5 12 1.6 15.8",
+"truck":"M3 7h11v9.5H3zM14 10.5h4l3 3v3h-7zM7 19.5h.01M18 19.5h.01",
+"building":"M4 21V6.5L11 3l7 3.5V21M9.5 21v-4.5h5V21M7.5 10h1.5M14.5 10H16M7.5 14h1.5M14.5 14H16",
+"flask":"M9 3h6M10 3v6.2L5.2 18a2 2 0 0 0 1.8 3h10a2 2 0 0 0 1.8-3L14 9.2V3M8 15h8",
+"spa":"M12 3.5l1.9 4.6L18.5 10l-4.6 1.9L12 16.5l-1.9-4.6L5.5 10l4.6-1.9zM18.5 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z",
+"book":"M4 4.5h5.5a2.5 2.5 0 0 1 2.5 2.5v13a2 2 0 0 0-2-2H4zM20 4.5h-5.5A2.5 2.5 0 0 0 12 7v13a2 2 0 0 1 2-2h6z",
+"coins":"M4 6.5c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6.5v11c0 1.7 3.6 3 8 3s8-1.3 8-3v-11M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
+"bolt":"M13.2 2.5 4.5 14H11l-1 7.5L19.5 10H13z",
+"layers":"M12 3 3 7.8l9 4.8 9-4.8zM3 13l9 4.8 9-4.8",
+"gear":"M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2.5v2.8M12 18.7v2.8M2.5 12h2.8M18.7 12h2.8M5.2 5.2l2 2M16.8 16.8l2 2M18.8 5.2l-2 2M7.2 16.8l-2 2",
+"case":"M3 8h18v12H3zM8.5 8V5h7v3M3 13.5h18M10.5 13.5h3",
+"rocket":"M12 2.5s4.2 2.3 4.2 8.2c0 3-1.6 5.2-4.2 7.2-2.6-2-4.2-4.2-4.2-7.2C7.8 4.8 12 2.5 12 2.5zM12 11.2a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zM8.2 15.5 6 21l4-2M15.8 15.5 18 21l-4-2",
+"monitor":"M3.5 5h17v10.5h-17zM8.5 20h7M12 15.5V20",
+"globe":"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3.3 12h17.4M12 3c2.6 2.8 2.6 15.2 0 18M12 3c-2.6 2.8-2.6 15.2 0 18",
+"cap":"M12 4 2.5 8.6 12 13.2l9.5-4.6zM6.3 10.8v4.5c0 1.8 2.6 3.2 5.7 3.2s5.7-1.4 5.7-3.2v-4.5",
+"users":"M16 20.5v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 10.5a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 20.5v-2a4 4 0 0 0-3-3.9M16.5 2.7a4 4 0 0 1 0 7.7",
+"swap":"M4 8.5h13l-3.4-3.4M20 15.5H7l3.4 3.4",
+"yen":"M6.5 4.5 12 12l5.5-7.5M12 12v7.5M8.2 13.8h7.6M8.2 16.6h7.6",
+"town":"M2.5 21h19M5 21V9l7-5 7 5v12M10 21v-5h4v5M8 12h1.5M14.5 12H16",
+"mega":"M3 11v2.2a1 1 0 0 0 1 1h2.2L11.5 18V6L6.2 9.8H4a1 1 0 0 0-1 1zM15.5 8.5a4.2 4.2 0 0 1 0 7M18.5 5.5a8.2 8.2 0 0 1 0 13",
+"shield":"M12 2.5 4.5 5.3v5.9c0 4.8 3.2 9 7.5 10.3 4.3-1.3 7.5-5.5 7.5-10.3V5.3zM9.2 12.2l2 2 3.6-3.8",
+"user":"M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+"store":"M4 9.5h16V21H4zM2.8 9.5 4.6 4h14.8l1.8 5.5M9.5 21v-6h5v6",
+"towers":"M3 21V8.5h7V21M14 21V3h7v18M6 12h1.5M6 16h1.5M17 7h1.5M17 11.5h1.5M17 16h1.5",
+"search":"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.4-4.4",
+"calendar":"M4 5.5h16V21H4zM4 10h16M8.5 3v4M15.5 3v4M8 14h2M14 14h2M8 17.5h2M14 17.5h2",
+"doc":"M13 3H6.5v18h11V7.5zM13 3v4.5h4.5M9 12.5h6M9 16h6",
+"chat":"M21 12a8 8 0 0 1-8 8H4l2-3.2A8 8 0 1 1 21 12z",
+}
+def svg_icon(key, cls=""):
+    p = _I.get(key, _I["gear"])
+    c = ' class="' + cls + '"' if cls else ""
+    return '<svg viewBox="0 0 24 24" aria-hidden="true"' + c + '><path d="' + p + '"/></svg>'
+
+_IND_ICON = [("製造","factory"),("建設","helmet"),("情報通信","chip"),("卸売","cart"),("小売","cart"),
+ ("宿泊","food"),("飲食","food"),("医療","heart"),("福祉","heart"),("農業","sprout"),("林業","sprout"),
+ ("漁業","fish"),("運輸","truck"),("郵便","truck"),("不動産","building"),("物品賃貸","building"),
+ ("学術","flask"),("専門","flask"),("技術サービス","flask"),("生活関連","spa"),("娯楽","spa"),
+ ("教育","book"),("学習","book"),("金融","coins"),("保険","coins"),("電気","bolt"),("ガス","bolt"),
+ ("水道","bolt"),("熱供給","bolt"),("鉱業","layers"),("採石","layers"),("複合サービス","layers"),
+ ("公務","case"),("サービス業","gear"),("分類不能","gear")]
+_PUR_ICON = [("新たな事業","rocket"),("設備","monitor"),("IT","monitor"),("販路","globe"),("海外","globe"),
+ ("人材","cap"),("育成","cap"),("雇用","users"),("職場","users"),("研究","flask"),("実証","flask"),
+ ("引き継","swap"),("承継","swap"),("資金","yen"),("まちづくり","town"),("地域","town"),
+ ("イベント","mega"),("運営","mega"),("感染","shield"),("環境","sprout"),("省エネ","bolt")]
+def icon_for(label, table):
+    for k, v in table: 
+        if k in label: return v
+    return "gear"
+def ind_icon(l): return icon_for(l, _IND_ICON)
+def pur_icon(l): return icon_for(l, _PUR_ICON)
+
+def cards(items, cls=""):
+    """items: [(href, icon_key, 名称, 件数 or "")]"""
+    out = []
+    for href, ik, nm, c in items:
+        cnt = '<span class="c">' + str(c) + '</span>' if c != "" else ""
+        out.append('<a href="' + href + '"><span class="ic">' + svg_icon(ik) + '</span>'
+                   '<span class="nm">' + esc(nm) + '</span>' + cnt + '</a>')
+    k = "cards" + ((" " + cls) if cls else "")
+    return '<div class="' + k + '">' + "".join(out) + '</div>'
+
+# ================================================================ 九州・沖縄マップ
+KMAP = json.load(open(os.path.join(ROOT, "data", "kyushu_map.json"), encoding="utf-8"))
+
+LABEL_ADJ = {"fukuoka": (12, -10), "saga": (-14, 2), "nagasaki": (-16, 18),
+             "kumamoto": (-2, -6), "oita": (2, -2), "miyazaki": (4, 2), "kagoshima": (-4, -6)}
+PREF_FILL = {"fukuoka": "#C3DCEF", "saga": "#A9CBE6", "nagasaki": "#D3E7F4", "kumamoto": "#B6D5EC",
+             "oita": "#DBECF7", "miyazaki": "#C9E1F2", "kagoshima": "#AFD0E9", "okinawa": "#BFDAEE"}
+
+def kmap(active=None):
+    shapes, labels = [], []
+    for s, n, en, _ in PREFS:
+        o = len([r for r in pref_recs(n) if r["status"] == "open"])
+        sel = ' aria-current="true"' if active == s else ''
+        if s == "okinawa":
+            continue
+        lx, ly = KMAP["labels"][s]
+        dx, dy = LABEL_ADJ.get(s, (0, 0)); lx += dx; ly += dy
+        shapes.append(f'<a class="pref" href="{U("pref/"+s+"/")}"{sel} aria-label="{n}の補助金 受付中{o}件">'
+                      f'<title>{n}／受付中 {o}件</title>'
+                      f'<path fill="{PREF_FILL[s]}" d="{KMAP["main"][s]}"/></a>')
+        labels.append(f'<text class="lab" x="{lx}" y="{ly}" text-anchor="middle">{n[:-1]}</text>'
+                      f'<text class="num" x="{lx}" y="{ly+13}" text-anchor="middle">受付中 {o}件</text>')
+    n = "沖縄県"
+    o = len([r for r in pref_recs(n) if r["status"] == "open"])
+    oki = (f'<a class="pref" href="{U("pref/okinawa/")}" aria-label="沖縄県の補助金 受付中{o}件">'
+           f'<title>沖縄県／受付中 {o}件</title>'
+           f'<path fill="{PREF_FILL["okinawa"]}" d="{KMAP["okinawa"]["path"]}"/></a>'
+           f'<g class="lbl"><text class="lab" x="64" y="32" text-anchor="middle">沖縄</text>'
+           f'<text class="num" x="64" y="45" text-anchor="middle">受付中 {o}件</text></g>')
+    return (f'<svg class="kmap" viewBox="0 0 322 396" role="img" '
+            f'aria-label="九州・沖縄8県の補助金マップ">'
+            f'<g transform="translate(21,6)">{"".join(shapes)}'
+            f'<g class="lbl">{"".join(labels)}</g></g>'
+            f'<g transform="translate(3,258) scale(.86)">'
+            f'<rect class="inset" x="0" y="0" width="130" height="96" rx="4"/>{oki}</g>'
+            f'<text class="cap" x="318" y="392" text-anchor="end">KYUSHU &amp; OKINAWA</text></svg>')
+
+def pref_thumb(slug):
+    return (f'<svg class="th" viewBox="0 0 100 100" aria-hidden="true">'
+            f'<path d="{KMAP["thumbs"][slug]}"/></svg>')
+
+# ================================================================ 装飾（生成画像）
+HERO_ART = ('<div class="hero-art" aria-hidden="true"><svg viewBox="0 0 600 600" '
+            'xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">'
+            '<defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1">'
+            '<stop offset="0" stop-color="#9EC8E8"/><stop offset="1" stop-color="#E6EFF7"/>'
+            '</linearGradient></defs>'
+            + "".join(
+                f'<circle cx="430" cy="210" r="{r}" fill="none" stroke="url(#hg)" '
+                f'stroke-width="1" opacity="{0.55 - i*0.032:.2f}"/>'
+                for i, r in enumerate(range(40, 460, 26)))
+            + "".join(
+                f'<path d="M-40 {y} C 120 {y-34}, 260 {y+30}, 420 {y-12} S 660 {y+22}, 700 {y-6}" '
+                f'fill="none" stroke="#7FB4DC" stroke-width="1" opacity="{0.30 - i*0.028:.2f}"/>'
+                for i, y in enumerate(range(430, 620, 22)))
+            + '</svg></div>')
+
+_EYE_PAL = [("#14476E", "#3E9AD6"), ("#0E7490", "#7FD1E0"), ("#1F6FA8", "#9EC8E8"),
+            ("#0D2B45", "#5FA8D8"), ("#17607F", "#8FC2E8"), ("#1B5E8C", "#6FB6E2")]
+def guide_eye(i, motif=0):
+    a, b = _EYE_PAL[i % len(_EYE_PAL)]
+    m = motif % 4
+    if m == 0:
+        art = "".join(f'<rect x="{20+j*46}" y="{104-j*13}" width="30" height="{16+j*13}" fill="{b}" opacity="{.35+j*.14:.2f}"/>' for j in range(5))
+    elif m == 1:
+        art = "".join(f'<circle cx="{46+j*42}" cy="60" r="{8+j*7}" fill="none" stroke="{b}" stroke-width="2.4" opacity="{.8-j*.13:.2f}"/>' for j in range(5))
+    elif m == 2:
+        art = ('<path d="M0 92 C 60 62, 120 108, 180 76 S 300 52, 360 84" fill="none" stroke="'+b+'" stroke-width="2.6"/>'
+               '<path d="M0 110 C 60 82, 120 126, 180 96 S 300 74, 360 104" fill="none" stroke="'+b+'" stroke-width="2" opacity=".6"/>'
+               + "".join(f'<circle cx="{40+j*70}" cy="{84-j*4}" r="4.5" fill="{b}"/>' for j in range(5)))
+    else:
+        art = "".join(f'<path d="M{30+j*60} 100 l22-44 22 44z" fill="{b}" opacity="{.28+j*.16:.2f}"/>' for j in range(4))
+    return (f'<svg class="eye" viewBox="0 0 360 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
+            f'<rect width="360" height="120" fill="{a}"/>{art}</svg>')
+
+# ================================================================ 対象者から探す
+def _emp_le(r, n):
+    m = re.match(r"(\d+)名以下", r["emp"] or "")
+    return bool(m) and int(m.group(1)) <= n
+def _free(r): return "制約なし" in (r["emp"] or "")
+def _has(r, *ws):
+    t = r["title"] + " " + r["industry"] + " " + r["purpose"]
+    return any(w in t for w in ws)
+
+AUDIENCES = [
+ ("sme","中小企業","SMALL & MEDIUM BUSINESS","building",
+  "資本金・従業員数が中小企業基本法の範囲に収まる法人。九州・沖縄の制度の大半がここを主対象にしています。",
+  lambda r: _free(r) or _emp_le(r, 300)),
+ ("sole","個人事業主","SOLE PROPRIETOR","user",
+  "開業届を出して事業を営む個人。法人でなくても申請できる制度は想像以上に多くあります。",
+  lambda r: _free(r) or _emp_le(r, 20)),
+ ("micro","小規模事業者","MICRO BUSINESS","store",
+  "商業・サービス業は従業員5人以下、製造業その他は20人以下が目安。持続化補助金の主戦場です。",
+  lambda r: _emp_le(r, 20)),
+ ("startup","創業・起業予定","STARTUP","rocket",
+  "これから開業する方、開業して間もない方。創業枠や開業支援の加点が使えます。",
+  lambda r: _has(r, "創業", "起業", "スタートアップ", "新規開業", "新たな事業")),
+ ("large","大企業","LARGE ENTERPRISE","towers",
+  "中小企業の枠を超える規模の事業者。件数は絞られますが、研究開発・脱炭素系で対象になります。",
+  lambda r: _free(r) or (not _emp_le(r, 300) and bool(r["emp"]))),
+ ("npo","NPO・団体","NPO & ORGANIZATION","users",
+  "特定非営利活動法人、組合、協議会など。地域づくり・福祉分野で対象になる制度があります。",
+  lambda r: _has(r, "NPO", "非営利", "団体", "組合", "協議会", "まちづくり", "地域")),
+ ("women","女性・若者","WOMEN & YOUTH","user",
+  "女性活躍や若者の就業・起業を後押しする枠。加点要件として設定されることも多い区分です。",
+  lambda r: _has(r, "女性", "若者", "若年", "両立", "育児", "子育て")),
+ ("primary","農林漁業者","PRIMARY INDUSTRY","sprout",
+  "農業・林業・漁業の事業者。九州・沖縄では一次産業の比重が高く、専用の支援が厚い分野です。",
+  lambda r: _has(r, "農業", "林業", "漁業", "畜産", "水産", "園芸")),
+]
+
+def build_audience():
+    items = []
+    for slug, name, en, ic, desc, pred in AUDIENCES:
+        rs = [r for r in RECS if pred(r)]
+        items.append((U("audience/" + slug + "/"), ic, name, len(rs)))
+    body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>対象者から探す</div></div>'
+            f'<section><div class="wrap">'
+            + sec_h("BY AUDIENCE", "対象者から補助金・助成金を探す",
+                    "自社の形態や立場から、対象になりうる制度を絞り込みます。区分は本サイトが掲載データをもとに分類したものです。")
+            + cards(items, "c4") + '</div></section>' + CTA)
+    write("audience/index.html", layout(f"対象者から補助金を探す｜{SITE_NAME}",
+        "中小企業・個人事業主・小規模事業者・創業予定者など、立場別に九州・沖縄の補助金を探せます。", body, "audience/"))
+
+    for slug, name, en, ic, desc, pred in AUDIENCES:
+        rs = [r for r in RECS if pred(r)]
+        op = [r for r in rs if r["status"] == "open"]
+        pb = [(U("search/") + "?pref=" + n, "search", n, len([r for r in rs if n in r["prefs"]])) for _, n, _, _ in PREFS]
+        others = "".join(f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" '
+                         f'href="{U("audience/"+s2+"/")}">{n2}</a>' for s2, n2, _, _, _, _ in AUDIENCES if s2 != slug)
+        body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
+                f'<a href="{U("audience/")}">対象者から探す</a><span>/</span>{name}</div></div>'
+                f'<section><div class="wrap">'
+                + sec_h("BY AUDIENCE", name + "が使える補助金・助成金",
+                        desc + f"　該当 {len(rs):,} 件／受付中 {len(op)} 件（{TODAY_JP}時点）")
+                + rows(op[:30] or rs[:20])
+                + '<div style="padding-top:34px">' + sec_h("BY PREFECTURE", "県で絞り込む") + cards(pb, "c4") + '</div>'
+                + '</div></section>'
+                f'<section class="alt"><div class="wrap">' + sec_h("OTHER", "ほかの対象者") + others + '</div></section>' + CTA)
+        write(f"audience/{slug}/index.html", layout(
+            f"{name}向けの補助金・助成金【九州・沖縄／受付中{len(op)}件】｜{SITE_NAME}",
+            f"{name}が対象になりうる九州・沖縄の補助金・助成金を{len(rs)}件掲載。受付中{len(op)}件。{desc}",
+            body, f"audience/{slug}/"))
+
+# ================================================================ 許認可・届出ガイド
+PERMITS = [
+ ("construction","建設業","CONSTRUCTION","helmet",
+  "建設業で開業・拡大するときに必要になる許可と届出をまとめました。請負金額によって許可の要否が変わります。",
+  [("許可","建設業許可（知事許可／大臣許可）","都道府県知事または国土交通大臣","おおむね30〜90日",
+    "1件の請負金額が建築一式工事で1,500万円以上（または延べ面積150㎡以上の木造住宅）、その他の工事で500万円以上になる場合に必要です。営業所が1つの都道府県内なら知事許可、複数県にまたがる場合は大臣許可。経営業務の管理責任者と専任技術者の配置、財産的基礎の要件があります。"),
+   ("許可","特定建設業許可","都道府県知事または国土交通大臣","おおむね30〜90日",
+    "元請として下請に出す金額の合計が一定額以上になる場合に必要な、一般建設業より要件の重い許可です。財産的基礎（資本金・自己資本）と専任技術者の資格要件が厳しくなります。"),
+   ("審査","経営事項審査（経審）","都道府県知事または国土交通大臣","決算後、おおむね2〜3か月",
+    "公共工事を元請として直接請け負う場合に必須の審査です。経営規模・経営状況・技術力・社会性を点数化します。入札参加資格の申請とセットで考えます。"),
+   ("登録","解体工事業登録","都道府県知事","おおむね30日",
+    "建設業許可（土木・建築・とび土工）を持たずに解体工事を請け負う場合に必要な登録です。技術管理者の設置が要件。"),
+   ("登録","電気工事業者登録／届出","都道府県知事または経済産業大臣","おおむね2〜4週間",
+    "一般用電気工作物や自家用電気工作物の電気工事を請け負う場合に必要です。主任電気工事士の設置と、絶縁抵抗計等の器具備付けが求められます。"),
+   ("許可","産業廃棄物収集運搬業許可","都道府県知事または政令市長","おおむね1〜2か月",
+    "工事で出た廃棄物を自社で他者の現場から運ぶ場合などに必要です。講習会の修了が前提になります。"),
+   ("届出","労働保険（労災・雇用）成立届","労働基準監督署・ハローワーク","即日〜数日",
+    "人を雇う場合は事業開始から10日以内に手続きします。建設業は元請・下請で労災の扱いが異なる点に注意。")]),
+ ("hospitality","宿泊業・飲食サービス業","HOSPITALITY & FOOD","food",
+  "飲食店・宿泊施設の開業に必要な許可と届出です。保健所・消防署・警察署と、窓口が分かれます。",
+  [("許可","飲食店営業許可","保健所（都道府県知事等）","事前相談から1か月程度",
+    "食品衛生法にもとづく許可です。厨房の構造設備が施設基準を満たしていること、食品衛生責任者を置くことが前提。内装工事の着工前に保健所へ図面を持って事前相談するのが実務の鉄則です。"),
+   ("届出","食品衛生責任者の設置","保健所","即日",
+    "施設ごとに1名以上。調理師・栄養士等の有資格者は講習免除、それ以外は養成講習会（約6時間）を受講します。"),
+   ("届出","防火管理者選任届","消防署","即日",
+    "収容人員30人以上の飲食店で必要です。延べ面積300㎡以上は甲種、未満は乙種の講習修了が要件。"),
+   ("届出","深夜酒類提供飲食店営業開始届出","警察署（公安委員会）","営業開始の10日前まで",
+    "深夜0時以降に酒類を提供する場合に必要です。店舗の平面図・求積図の添付が求められ、用途地域による制限もあります。"),
+   ("許可","菓子製造業許可","保健所","1〜2週間",
+    "パン・ケーキ・和菓子などを製造して販売する場合、飲食店営業許可とは別に必要です。専用の製造区画が求められます。"),
+   ("許可","旅館業許可（旅館・ホテル営業／簡易宿所営業）","保健所","事前相談から1〜3か月",
+    "宿泊料を受けて人を宿泊させる場合に必要です。建築基準法・消防法の適合、フロント設置や構造設備の基準を満たす必要があります。"),
+   ("届出","住宅宿泊事業（民泊）届出","都道府県知事等","2週間〜1か月",
+    "年間提供日数180日以内の民泊を行う場合の届出制度です。自治体の条例で区域や期間が上乗せ規制されることがあり、沖縄・福岡では特に確認が必要です。")]),
+ ("transport","運輸業・郵便業","TRANSPORT & LOGISTICS","truck",
+  "トラック・バス・タクシーなど、運送事業の開業に必要な許可・届出です。",
+  [("許可","一般貨物自動車運送事業許可","地方運輸局（九州運輸局・沖縄総合事務局）","3〜5か月",
+    "他人の荷物を有償で運ぶ場合に必要です。営業所・車庫・休憩施設の要件、車両5台以上、運行管理者・整備管理者の選任、一定の自己資金が求められます。"),
+   ("届出","貨物軽自動車運送事業届出","地方運輸局","即日〜数日",
+    "軽自動車・バイクで有償運送を行う場合の届出です。車両1台から開始できます。"),
+   ("選任","運行管理者の選任","地方運輸局","届出後すぐ",
+    "車両数に応じた人数の運行管理者を選任します。国家試験合格または一定の実務経験＋講習が要件。"),
+   ("選任","整備管理者の選任","地方運輸局","届出後すぐ",
+    "車両5台以上の営業所ごとに必要です。整備士資格または2年以上の実務経験＋研修修了。"),
+   ("許可","一般乗用旅客自動車運送事業許可（タクシー）","地方運輸局","4〜6か月",
+    "人を有償で運ぶ事業に必要です。地域によって新規参入が制限されている場合があります。")]),
+ ("realestate","不動産業","REAL ESTATE","building",
+  "不動産の売買・仲介・管理を行うために必要な免許と登録です。",
+  [("免許","宅地建物取引業免許","都道府県知事または国土交通大臣","30〜60日",
+    "不動産の売買・交換・仲介を業として行う場合に必要です。事務所ごとに従業者5名に1名以上の専任の宅地建物取引士を設置します。"),
+   ("供託等","営業保証金の供託／保証協会への加入","法務局または保証協会","2週間〜1か月",
+    "主たる事務所1,000万円・従たる事務所ごと500万円の供託、または保証協会に加入して弁済業務保証金分担金（60万円／30万円）を納付します。実務では保証協会加入が一般的。"),
+   ("登録","賃貸住宅管理業登録","国土交通大臣","1〜2か月",
+    "管理戸数200戸以上で賃貸住宅の管理受託を行う場合に必要です。業務管理者の配置が要件。"),
+   ("届出","サブリース（特定転貸事業者）の規制対応","国土交通省","—",
+    "マスターリース契約では重要事項説明と契約書面の交付が義務づけられ、誇大広告・不当勧誘が禁止されています。登録制ではありませんが違反には罰則があります。")]),
+ ("medical","医療・福祉","MEDICAL & WELFARE","heart",
+  "診療所・介護事業所・障害福祉サービスの開設に必要な手続きです。",
+  [("届出／許可","診療所開設届／開設許可","保健所（都道府県知事等）","届出は10日以内・許可は1〜2か月",
+    "医師・歯科医師が開設する無床診療所は開設後10日以内の届出、有床診療所や医師以外が開設する場合は事前の開設許可が必要です。"),
+   ("指定","保険医療機関の指定","地方厚生局","申請月の翌月1日付",
+    "健康保険を扱うために必要です。締切日が月単位で決まっているため、開業日から逆算したスケジュール管理が重要になります。"),
+   ("指定","介護保険事業者指定","都道府県または市町村","1〜2か月",
+    "訪問介護・通所介護・居宅介護支援などサービス種別ごとに指定を受けます。人員・設備・運営の3基準を満たす必要があります。"),
+   ("指定","障害福祉サービス事業者指定","都道府県または市町村","1〜2か月",
+    "就労継続支援、生活介護、放課後等デイサービスなど。自治体ごとに事前協議の運用が異なります。"),
+   ("届出","医療法人設立認可","都道府県知事","4〜8か月",
+    "年2回程度の受付時期が定められていることが多く、スケジュールの制約が大きい手続きです。")]),
+ ("beauty","美容業・生活関連サービス","BEAUTY & PERSONAL SERVICE","spa",
+  "美容室・理容室・クリーニング店などの開業に必要な届出です。",
+  [("届出","美容所開設届","保健所","検査を含めて1〜2週間",
+    "開設前に届出を行い、構造設備の検査を受けます。作業室の面積、消毒設備、採光・照明・換気の基準があります。"),
+   ("届出","理容所開設届","保健所","検査を含めて1〜2週間",
+    "美容所と基準が異なります。美容と理容を同一店舗で行う場合は両方の届出と区画が必要になることがあります。"),
+   ("選任","管理美容師・管理理容師の設置","保健所","—",
+    "美容師・理容師が常時2名以上いる施設で必要です。実務経験3年以上かつ講習会修了が要件。"),
+   ("届出","クリーニング所開設届","保健所","1〜2週間",
+    "クリーニング師の設置と、業務従事者の講習受講が求められます。取次店のみの場合も届出が必要です。")]),
+ ("food","食品製造・小売","FOOD MANUFACTURING & RETAIL","cart",
+  "食品を製造・販売するための営業許可と、酒・中古品などの個別免許です。",
+  [("許可","食品衛生法にもとづく営業許可（32業種）","保健所","1〜2週間",
+    "菓子製造業、そうざい製造業、麺類製造業、食肉販売業、魚介類販売業など、業種ごとに許可が必要です。どの許可に当たるかは扱う品目と加工の度合いで決まるため、保健所への事前相談が確実です。"),
+   ("届出","営業届出（許可業種以外）","保健所","即日",
+    "2021年の食品衛生法改正で、許可が不要な食品関係営業にも届出が義務づけられました。"),
+   ("体制","HACCPに沿った衛生管理","保健所（監視指導）","—",
+    "すべての食品等事業者に義務づけられています。小規模事業者は業界団体の手引書に沿った簡略な運用が認められます。"),
+   ("免許","酒類販売業免許","税務署","2か月程度",
+    "一般酒類小売業免許、通信販売酒類小売業免許など種別があります。通信販売免許では扱える銘柄に制限がある点に注意。"),
+   ("許可","古物商許可","警察署（公安委員会）","40日程度",
+    "中古品を仕入れて販売する場合に必要です。リユース・リサイクル、買取を伴う小売で該当します。")]),
+ ("it","情報通信業","IT & TELECOM","chip",
+  "IT・通信サービスを提供する際に関係する届出と、実務上求められる認証です。",
+  [("届出","電気通信事業の届出／登録","総務省","届出は即日〜数週間",
+    "他人の通信を媒介するサービス（メッセージング、VPN、一部のクラウド等）を提供する場合に必要です。単なるウェブサイト運営は対象外ですが、判断が難しいため総務省の相談窓口の利用が確実です。"),
+   ("許可","古物商許可","警察署（公安委員会）","40日程度",
+    "中古PC・スマートフォンの買取販売を行う場合に必要です。"),
+   ("届出","労働者派遣事業許可／有料職業紹介事業許可","厚生労働大臣","2〜3か月",
+    "エンジニアの派遣や紹介を行う場合に必要です。資産要件（基準資産額・現預金）と派遣元責任者講習の受講が求められます。"),
+   ("認証","プライバシーマーク／ISMS（任意）","審査機関","6か月〜1年",
+    "法令上の義務ではありませんが、官公庁・大企業との取引で実質的な参加要件になることがあります。")]),
+]
+
+def build_permits():
+    items = [(U("permit/" + s + "/"), ic, n, len(its)) for s, n, en, ic, d, its in PERMITS]
+    body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>許認可・届出ガイド</div></div>'
+            f'<section><div class="wrap">'
+            + sec_h("PERMITS", "許認可・届出ガイド",
+                    "開業や新規事業の前に必要な許可・届出を業種別にまとめました。補助金の申請より前に、ここが通らないと事業が始められません。")
+            + cards(items, "c4")
+            + '<div class="note" style="margin-top:34px">許認可の要件・処理期間は自治体や事案によって変わります。'
+              '最終的な判断はかならず管轄窓口、または行政書士にご確認ください。</div>'
+            + '</div></section>' + CTA)
+    write("permit/index.html", layout(f"許認可・届出ガイド｜業種別に必要な手続き｜{SITE_NAME}",
+        "建設業・飲食業・運輸業・不動産業など、業種ごとに開業に必要な許認可と届出、管轄窓口、処理期間をまとめています。",
+        body, "permit/"))
+
+    for s, n, en, ic, desc, its in PERMITS:
+        lst = "".join(
+            f'<article><div class="ph">'
+            f'<span class="kind{" todoke" if k in ("届出","選任","体制","供託等") else ""}">{esc(k)}</span>'
+            f'<span class="span">処理期間の目安：{esc(sp)}</span></div>'
+            f'<h3>{esc(t)}</h3><div class="kan">管轄：{esc(kan)}</div><p>{esc(ds)}</p></article>'
+            for k, t, kan, sp, ds in its)
+        rel = [r for r in RECS if r["status"] == "open" and n.split("業")[0] in (r["industry"] or "")][:6]
+        others = "".join(f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" '
+                         f'href="{U("permit/"+s2+"/")}">{n2}</a>' for s2, n2, _, _, _, _ in PERMITS if s2 != s)
+        body = (f'<div class="wrap narrow"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
+                f'<a href="{U("permit/")}">許認可・届出ガイド</a><span>/</span>{n}</div>'
+                f'<div class="detail-h"><span class="tag" style="border-color:var(--hi);color:var(--hi)">{en}</span>'
+                f'<h1>{n}の開業に必要な許認可・届出</h1>'
+                f'<p style="font-size:15px;color:var(--ink-70);margin:0;line-height:1.95">{esc(desc)}</p></div>'
+                f'<div class="permits">{lst}</div>'
+                f'<div class="note warn" style="margin-top:32px">ここに挙げたのは代表的なものです。'
+                f'取り扱う品目・立地・規模によって必要な手続きは増減します。'
+                f'着工・内装工事の前に管轄窓口へ事前相談することを強くおすすめします。</div>'
+                f'<h2 style="font-family:var(--serif);font-size:21px;border-bottom:1px solid var(--rule);'
+                f'padding-bottom:12px;margin-top:48px;letter-spacing:.03em">{n}が使える、受付中の補助金</h2>'
+                + rows(rel) + '</div>'
+                f'<section class="alt"><div class="wrap">' + sec_h("OTHER", "ほかの業種の許認可") + others + '</div></section>' + CTA)
+        write(f"permit/{s}/index.html", layout(
+            f"{n}の開業に必要な許認可・届出一覧｜{SITE_NAME}",
+            f"{n}を始めるときに必要な許可・届出を、管轄窓口と処理期間の目安つきでまとめました。{desc}",
+            body, f"permit/{s}/"))
+
+# ================================================================ クロスページ（目的×県／業種×県）
+def build_cross():
+    for p in PURPOSE_LIST:
+        base = purpose_recs(p)
+        for s, n, en, pdesc in PREFS:
+            rs = [r for r in base if n in r["prefs"]]
+            if not rs: continue
+            op = [r for r in rs if r["status"] == "open"]
+            loc = [r for r in rs if not r["nationwide"]]
+            sib = "".join(f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" '
+                          f'href="{U("purpose/"+P_SLUG[p]+"/"+s2+"/")}">{n2}</a>' for s2, n2, _, _ in PREFS if s2 != s)
+            body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
+                    f'<a href="{U("purpose/")}">目的から探す</a><span>/</span>'
+                    f'<a href="{U("purpose/"+P_SLUG[p]+"/")}">{esc(p)}</a><span>/</span>{n}</div></div>'
+                    f'<section><div class="wrap">'
+                    + sec_h("PURPOSE × PREFECTURE", n + "で" + esc(p) + "ときの補助金",
+                            f"{n}の事業者が対象で、目的が「{p}」に該当する制度は {len(rs):,} 件。"
+                            f"うち受付中 {len(op)} 件、{n}など地域が限定されたものが {len(loc)} 件です（{TODAY_JP}時点）。")
+                    + rows(op[:25] or rs[:15])
+                    + f'<div style="padding-top:30px"><a class="more" href="{U("search/")}?pref={n}&purpose={p}">'
+                      f'この条件で検索画面を開く →</a></div>'
+                    + '</div></section>'
+                    f'<section class="alt"><div class="wrap">' + sec_h("OTHER PREFECTURES", "ほかの県で同じ目的を見る")
+                    + sib + f'<div style="margin-top:22px"><a class="more" href="{U("pref/"+s+"/")}">'
+                      f'{n}の補助金をすべて見る →</a></div></div></section>' + CTA)
+            write(f"purpose/{P_SLUG[p]}/{s}/index.html", layout(
+                f"{n}で{p}ときの補助金・助成金【受付中{len(op)}件】｜{SITE_NAME}",
+                f"{n}の事業者が「{p}」目的で使える補助金・助成金を{len(rs)}件掲載。受付中{len(op)}件。",
+                body, f"purpose/{P_SLUG[p]}/{s}/"))
+
+    for p in INDUSTRY_LIST:
+        base = industry_recs(p)
+        for s, n, en, pdesc in PREFS:
+            rs = [r for r in base if n in r["prefs"]]
+            if len(rs) < 3: continue
+            op = [r for r in rs if r["status"] == "open"]
+            sib = "".join(f'<a class="tag pref" style="margin:0 6px 6px 0;padding:8px 14px;font-size:13px" '
+                          f'href="{U("industry/"+I_SLUG[p]+"/"+s2+"/")}">{n2}</a>' for s2, n2, _, _ in PREFS if s2 != s)
+            body = (f'<div class="wrap"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>'
+                    f'<a href="{U("industry/")}">業種から探す</a><span>/</span>'
+                    f'<a href="{U("industry/"+I_SLUG[p]+"/")}">{esc(p)}</a><span>/</span>{n}</div></div>'
+                    f'<section><div class="wrap">'
+                    + sec_h("INDUSTRY × PREFECTURE", n + "の" + esc(p) + "が使える補助金",
+                            f"{n}の事業者で、対象業種に「{p}」を含む制度は {len(rs):,} 件。"
+                            f"うち受付中 {len(op)} 件です（{TODAY_JP}時点）。")
+                    + rows(op[:25] or rs[:15])
+                    + f'<div style="padding-top:30px"><a class="more" href="{U("search/")}?pref={n}&industry={p}">'
+                      f'この条件で検索画面を開く →</a></div>'
+                    + '</div></section>'
+                    f'<section class="alt"><div class="wrap">' + sec_h("OTHER PREFECTURES", "ほかの県で同じ業種を見る")
+                    + sib + '</div></section>' + CTA)
+            write(f"industry/{I_SLUG[p]}/{s}/index.html", layout(
+                f"{n}の{p}が使える補助金・助成金【受付中{len(op)}件】｜{SITE_NAME}",
+                f"{n}の{p}を対象とする補助金・助成金を{len(rs)}件掲載。受付中{len(op)}件。",
+                body, f"industry/{I_SLUG[p]}/{s}/"))
+
+# ================================================================ AI相談
+def ai_widget():
+    return (f'<button class="ai-fab" id="ai-open" aria-label="補助金AI相談をひらく">'
+            f'{svg_icon("chat")}<span class="tx">補助金AI相談<span class="sub">24時間・無料</span></span></button>'
+            f'<div class="ai-panel" id="ai-panel" role="dialog" aria-label="補助金AI相談">'
+            f'<div class="ai-hd"><div><b>補助金AI相談</b><small>九州・沖縄{N_ALL:,}件から探します</small></div>'
+            f'<button id="ai-close" aria-label="閉じる">×</button></div>'
+            f'<div class="ai-log" id="ai-log"></div>'
+            f'<div class="ai-chips" id="ai-chips"></div>'
+            f'<form class="ai-in" id="ai-form"><input id="ai-text" autocomplete="off" '
+            f'placeholder="例：熊本の製造業で設備を入れたい"><button type="submit" aria-label="送信">'
+            f'<svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button></form>'
+            f'<div class="ai-note">掲載データにもとづく自動応答です。最終的な可否は公募要領と窓口でご確認ください。</div>'
+            f'</div>')
+
+def build_ai():
+    ex = ["熊本の製造業で設備を入れたい", "福岡で人を採用したい。使える助成金は？",
+          "沖縄の飲食店、締切が近いものを教えて", "補助金はいつお金がもらえる？",
+          "gBizIDって必要？", "個人事業主でも申請できる？"]
+    chips = "".join(f'<button class="btn ghost sm" data-q="{esc(q)}" style="margin:0 8px 8px 0">{esc(q)}</button>' for q in ex)
+    body = (f'<div class="wrap narrow"><div class="crumbs"><a href="{U()}">ホーム</a><span>/</span>補助金AI相談</div>'
+            f'<div class="detail-h"><span class="tag" style="border-color:var(--hi);color:var(--hi)">AI ASSISTANT</span>'
+            f'<h1>補助金AI相談</h1>'
+            f'<p style="font-size:15px;color:var(--ink-70);margin:0;line-height:1.95">'
+            f'県・業種・やりたいことを文章で入れるだけで、九州・沖縄8県の掲載 {N_ALL:,} 件のなかから'
+            f'条件に合う制度を探します。会員登録もメールアドレスも不要です。</p></div>'
+            f'<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em">こう聞いてください</h2>'
+            f'<div style="margin:18px 0 30px" id="ai-examples">{chips}</div>'
+            f'<div class="note">右下のボタンからいつでも開けます。制度の詳細ページでは、'
+            f'そのページの制度について質問することもできます。</div>'
+            f'<h2 style="font-family:var(--serif);font-size:20px;letter-spacing:.03em;margin-top:40px">答えられること</h2>'
+            f'<table class="prose" style="width:100%;border-collapse:collapse;font-size:13.5px">'
+            f'<tr><th>種類</th><th>例</th></tr>'
+            f'<tr><td>制度の絞り込み</td><td>県・業種・目的・従業員規模・締切・金額から候補を提示</td></tr>'
+            f'<tr><td>締切の確認</td><td>「今月締切のもの」「あと30日以内」</td></tr>'
+            f'<tr><td>申請実務の基本</td><td>後払いの仕組み、交付決定前の発注、gBizID、商工会窓口、必要書類</td></tr>'
+            f'<tr><td>制度ガイドの案内</td><td>該当するガイド記事へ誘導</td></tr></table>'
+            f'<div class="note warn" style="margin-top:34px">個別の採択可否や、金額の確約はできません。'
+            f'要件の最終判断は各制度の公募要領と、所管窓口・専門家にご確認ください。</div>'
+            f'<div style="height:50px"></div></div>{CTA}')
+    write("ai/index.html", layout(f"補助金AI相談｜九州・沖縄の制度を文章で探す｜{SITE_NAME}",
+        f"県・業種・やりたいことを文章で入力すると、九州・沖縄8県の補助金{N_ALL:,}件から条件に合う制度を探します。登録不要・24時間。",
+        body, "ai/", data_js=True))
+
+# ================================================================ 共有データ / OGP画像
+def build_data():
+    payload = [{"i":r["id"],"t":r["title"],"p":r["prefs"],"m":r["max"],"r":r["rate"],
+                "d":(r["end"] or "")[:10],"s":(r["start"] or "")[:10],"st":r["status"],
+                "u":r["purpose"],"g":r["industry"],"e":r["emp"],"n":r["inst"],
+                "w":1 if r["nationwide"] else 0} for r in RECS]
+    write("assets/data.json", json.dumps(payload, ensure_ascii=False, separators=(",",":")))
+
+_OG_FONTS = ["/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc",
+             "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc",
+             "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+             "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
+             "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"]
+def _parse_path(d, sc, ox, oy):
+    polys = []
+    for sub in d.split("M"):
+        sub = sub.strip().rstrip("Z").strip()
+        if not sub: continue
+        pts = []
+        for seg in sub.replace("L", " ").split():
+            pass
+        nums = [float(x) for x in re.findall(r"-?\d+\.?\d*", sub)]
+        pts = [(nums[i]*sc+ox, nums[i+1]*sc+oy) for i in range(0, len(nums)-1, 2)]
+        if len(pts) >= 3: polys.append(pts)
+    return polys
+
+def build_og():
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+    except Exception:
+        print("[warn] Pillow が無いため OGP 画像はスキップします"); return
+    font = None
+    for f in _OG_FONTS:
+        if os.path.exists(f):
+            try: font = f; break
+            except Exception: pass
+    W, H = 1200, 630
+    img = Image.new("RGB", (W, H), "#0D2B45")
+    dr = ImageDraw.Draw(img)
+    for i in range(H):                       # 上から下への淡いグラデーション
+        t = i / H
+        dr.line([(0, i), (W, i)], fill=(int(13+18*t), int(43+30*t), int(69+38*t)))
+    # 九州のシルエット
+    sc = 1.28; ox, oy = 810, 70
+    for slug in KMAP["main"]:
+        if slug == "viewBox": continue
+        for poly in _parse_path(KMAP["main"][slug], sc, ox, oy):
+            dr.polygon(poly, fill="#2E6C99")
+    for poly in _parse_path(KMAP["okinawa"]["path"], sc*.8, 790, 500):
+        dr.polygon(poly, fill="#2E6C99")
+    dr.rectangle([70, 96, 76, 534], fill="#3E9AD6")
+    if font:
+        try:
+            f1 = ImageFont.truetype(font, 62); f2 = ImageFont.truetype(font, 30)
+            f3 = ImageFont.truetype(font, 25); f4 = ImageFont.truetype(font, 21)
+            dr.text((112, 128), "九州補助金ナビ", font=f1, fill="#FFFFFF")
+            dr.text((114, 214), "KYUSHU & OKINAWA GRANTS", font=f4, fill="#8FC2E8")
+            dr.text((112, 290), "九州・沖縄8県の事業者が使える", font=f2, fill="#DCE9F3")
+            dr.text((112, 336), "補助金・助成金だけを集めました", font=f2, fill="#DCE9F3")
+            dr.text((112, 432), f"掲載 {N_ALL:,} 件 ／ 受付中 {N_OPEN:,} 件", font=f3, fill="#3E9AD6")
+            dr.text((112, 476), f"出典：デジタル庁 jGrants 公開API（{TODAY_JP}時点）", font=f4, fill="#7FA8C8")
+        except Exception as e:
+            print("[warn] OGP 文字描画に失敗:", e)
+    else:
+        print("[warn] 日本語フォントが見つからないため OGP は図版のみ")
+    os.makedirs(os.path.join(OUT, "assets"), exist_ok=True)
+    img.save(os.path.join(OUT, "assets", "og.png"), "PNG", optimize=True)
+    print("og.png written")
+
 # ---------------------------------------------------------------- main
 if __name__ == "__main__":
     if os.path.isdir(OUT): shutil.rmtree(OUT)
     os.makedirs(OUT)
-    shutil.copytree(os.path.join(ROOT,"assets"), os.path.join(OUT,"assets"))
+    shutil.copytree(os.path.join(ROOT, "assets"), os.path.join(OUT, "assets"))
     build_index(); build_prefs(); build_taxonomy(); build_search()
-    build_guides(); build_static(); build_subsidies(); build_meta()
-    n = sum(len(f) for _,_,f in os.walk(OUT))
+    build_guides(); build_audience(); build_permits(); build_ai()
+    build_static(); build_subsidies(); build_cross()
+    build_data(); build_og(); build_meta()
+    n = sum(len(f) for _, _, f in os.walk(OUT))
     print(f"built {n} files -> {OUT}")
-    print(f"records={N_ALL} open={N_OPEN} purposes={len(PURPOSE_LIST)} industries={len(INDUSTRY_LIST)}")
+    print(f"records={N_ALL} open={N_OPEN} local={N_LOCAL} purposes={len(PURPOSE_LIST)} "
+          f"industries={len(INDUSTRY_LIST)} audiences={len(AUDIENCES)} permits={len(PERMITS)}")
