@@ -4,7 +4,7 @@
   if (b && n) b.addEventListener('click', function () { n.classList.toggle('open'); });
 
   var yen = function (v) {
-    if (!v && v !== 0) return '—';
+    if (!v) return '—';   // 0 は jGrants 上「未設定」なので金額として出さない
     if (v >= 100000000) return (v / 100000000).toFixed(v % 100000000 ? 1 : 0) + '億円';
     if (v >= 10000) return Math.round(v / 10000).toLocaleString() + '万円';
     return Number(v).toLocaleString() + '円';
