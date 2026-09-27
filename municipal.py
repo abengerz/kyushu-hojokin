@@ -51,14 +51,21 @@ PREF_SITES = [
 ]
 
 
+# Wikidata の登録URLが英語版サイト等で使えないもの
+SITE_OVERRIDE = {
+    "平戸市": "https://www.city.hirado.nagasaki.jp/",
+}
+
+
 def load_sites():
     """data/municipalities.json（Wikidata由来・九州沖縄276市町村）＋8県。"""
     fp = os.path.join(ROOT, "data", "municipalities.json")
     sites = list(PREF_SITES)
     if os.path.exists(fp):
         for m in json.load(open(fp, encoding="utf-8")):
-            if m.get("site"):
-                sites.append((m["pref"], m["muni"], m["site"]))
+            url = SITE_OVERRIDE.get(m["muni"], m.get("site"))
+            if url:
+                sites.append((m["pref"], m["muni"], url))
     return sites
 
 
@@ -74,18 +81,34 @@ DROP_RE = re.compile(
     r"要望調査|意向調査|アンケート|説明会|セミナー|研修会の開催|相談会|"
     r"法の改正|法改正|改正されました|創設されました|お知らせ$|ご案内$|について$|"
     r"報告記事|質問と回答|Ｑ＆Ａ|Q&A|よくある質問|見直し|交付要綱|実施要領|取扱要領|"
-    r"様式|記入例|手引き|過去の|平成\d+年度|一覧表|実績|検証|評価結果")
+    r"様式|記入例|手引き|過去の|平成\d+年度|一覧表|実績|検証|評価結果|"
+    r"ガイドライン|適正化|交付規則|条例|規程|基本方針|パブリックコメント")
 
 # 事業者向けでないもの（個人・世帯向けの福祉／医療）は除く
 NG_RE = re.compile(r"予防接種|健診|検診|医療費|不妊|妊婦|乳幼児|就学|奨学|入学|通学|介護保険料|後期高齢|"
                    r"生活保護|障害年金|ひとり親|児童扶養|保育料|療育|自立支援|住宅リフォーム|住まい|"
                    r"アスリート|スポーツ少年|結婚新生活|移住支援金|生活困窮|高齢者|敬老|"
                    r"出産|子育て応援|医療的ケア|訪問介護|看護小規模|居宅介護|認知症|"
-                   r"マンション|空き家|浄化槽|生垣|ブロック塀|チャイルドシート|不登校")
+                   r"マンション|浄化槽|生垣|ブロック塀|チャイルドシート|不登校|"
+                   r"障害者|障がい|相談支援事業所|移動支援|日中一時|放課後等デイ|"
+                   r"予防接種|健康診査|がん検診|骨髄|献血|ワクチン")
 SKIP_EXT = re.compile(r"\.(pdf|docx?|xlsx?|pptx?|zip|jpe?g|png|gif|svg|mp4|csv)(\?|$)", re.I)
 
 
-def fetch(url, timeout=25):
+def fetch(url, timeout=25, tries=3):
+    """並列実行では一時的な接続失敗が起きるので、少し待って retry する。"""
+    for i in range(tries):
+        try:
+            return _fetch_once(url, timeout)
+        except urllib.error.HTTPError:
+            raise                      # 404 等は retry しない
+        except Exception:
+            if i == tries - 1:
+                raise
+            time.sleep(1.2 * (i + 1))
+
+
+def _fetch_once(url, timeout=25):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,*/*"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         raw = r.read(1_500_000)
@@ -142,10 +165,18 @@ def page_h1(h):
 
 
 def page_title(h):
+    """<title> から制度名らしい部分を取り出す。
+
+    自治体サイトは「久留米市：制度名」と「鹿児島県／制度名」の両方があり、
+    区切りの先頭を採ると自治体名だけになってしまう。最も長い断片を採る。
+    """
     m = re.search(r"<title[^>]*>(.*?)</title>", h, re.S | re.I)
     if not m: return ""
     t = html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1)))).strip()
-    return re.split(r"\s*[|｜/／-]\s*", t)[0].strip() or t
+    parts = [x.strip() for x in re.split(r"\s*[|｜/／：:–—]\s*|\s+-\s+", t) if x.strip()]
+    if len(parts) <= 1:
+        return t
+    return max(parts, key=len)
 
 
 AMOUNT = re.compile(r"(?:上限|限度額|補助上限|助成上限|最大)[^。\n]{0,14}?"
@@ -178,7 +209,11 @@ def clean_title(t, muni):
     for name in (muni, muni + "役所", muni + "ホームページ"):
         t = re.sub(r"^\s*" + re.escape(name) + r"\s*[：:｜|／/、　\-–—]*\s*", "", t).strip()
         t = re.sub(r"\s*[｜|／/・]\s*" + re.escape(name) + r"\s*$", "", t).strip()
-    return re.sub(r"\s{2,}", " ", t)
+    t = re.sub(r"\s{2,}", " ", t)
+    # 「大分市への企業立地…」から接頭辞を剥がすと「への企業立地…」になってしまう
+    if re.match(r"^[へにをはがのでとも、。]", t):
+        return ""
+    return t
 
 
 def is_hub(t):
@@ -285,13 +320,16 @@ def harvest(pref, name, base, cache):
                 continue
             title = page_title(h)
             h1 = page_h1(h)
-            if h1 and not HIT_RE.search(title) and HIT_RE.search(h1):
-                title = h1          # 見出しのほうが制度名を表しているケース
+            # <title> が「鹿児島県」のようにサイト名だけのサイトが実在する。
+            # その場合と、見出しのほうが制度名を表している場合は h1 を採る。
+            if h1 and (title in ("", name) or len(title) <= max(4, len(name))
+                       or (not HIT_RE.search(title) and HIT_RE.search(h1))):
+                title = h1
             outlinks = links(u, h)
             # 巡回に使うリンクを保存しておく（再実行を軽くするため）
             cache[u] = {"t": title,
-                        "l": [[nu, tx[:40]] for nu, tx in outlinks
-                              if in_scope(nu) or HIT_RE.search(tx)][:180]}
+                        "l": [[nu, tx[:16]] for nu, tx in outlinks
+                              if in_scope(nu) or HIT_RE.search(tx)][:60]}
 
         if title and HIT_RE.search(title) and not NG_RE.search(title):
             if h is None:

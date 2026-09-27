@@ -1,3 +1,5 @@
 .DS_Store
 __pycache__/
 site/
+data/muni_cache.json
+data/*.tmp

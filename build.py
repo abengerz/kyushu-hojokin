@@ -156,7 +156,14 @@ MUNI_ROMAJI = {
  "沖縄県":"okinawa-ken","那覇市":"naha-shi","沖縄市":"okinawa-shi","うるま市":"uruma-shi",
  "浦添市":"urasoe-shi","宮古島市":"miyakojima-shi",
 }
-MUNI_SLUG = {k: MUNI_ROMAJI.get(k[1], slug(k[0] + k[1])) for k in MUNI_BY_CITY}
+_MCODE = {}
+_mf = os.path.join(ROOT, "data", "municipalities.json")
+if os.path.exists(_mf):
+    for _r in json.load(open(_mf, encoding="utf-8")):
+        _MCODE[(_r["pref"], _r["muni"])] = _r["code"]
+# ローマ字を用意している主要自治体はそれを、残りは団体コードを使う（URLの安定性を優先）
+MUNI_SLUG = {k: MUNI_ROMAJI.get(k[1]) or ("m" + _MCODE[k] if k in _MCODE else slug(k[0] + k[1]))
+             for k in MUNI_BY_CITY}
 
 LOCAL = [r for r in RECS if not r["nationwide"]]
 N_LOCAL = len(LOCAL)
