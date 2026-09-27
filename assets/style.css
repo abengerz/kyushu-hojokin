@@ -66,7 +66,7 @@ nav.main a:hover{border-bottom-color:var(--hi);color:var(--ai)}
   background:linear-gradient(170deg,#DEEFFD 0%,#F0F8FE 44%,#F4F9FE 100%)}
 .hero-art{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .hero-art svg{position:absolute;right:-6%;top:-10%;width:78%;height:130%;opacity:.5}
-.hero .wrap{display:grid;grid-template-columns:1.06fr .94fr;gap:44px;align-items:center;
+.hero .wrap{display:grid;grid-template-columns:1fr 1.04fr;gap:40px;align-items:center;
   padding-top:58px;padding-bottom:54px;position:relative;z-index:1}
 .eyebrow{font-size:11px;letter-spacing:.32em;color:var(--hi);font-weight:700;margin:0 0 20px}
 .eyebrow::before{content:"";display:inline-block;width:30px;height:1px;background:var(--hi);vertical-align:middle;margin-right:12px}
@@ -85,13 +85,13 @@ h1.hero-t .sm{font-size:.40em;display:block;letter-spacing:.14em;color:var(--ink
 .ledger .k{font-size:11px;letter-spacing:.16em;color:var(--ink-40);margin-top:9px;font-weight:600}
 
 /* ---------- 九州・沖縄マップ ---------- */
-.kmap{width:100%;max-width:440px;margin-left:auto;display:block}
+.kmap{width:100%;max-width:560px;margin-left:auto;display:block}
 .kmap .pref path{stroke:#FFFFFF;stroke-width:1.3;stroke-linejoin:round;transition:fill .18s}
 .kmap .pref:hover path{fill:var(--ai)!important}
 .kmap .lbl{pointer-events:none}
-.kmap .lab{font-family:var(--serif);font-weight:700;font-size:13.5px;fill:var(--ai);
+.kmap .lab{font-family:var(--serif);font-weight:700;font-size:14.5px;fill:var(--ai);
   paint-order:stroke;stroke:#F4F9FE;stroke-width:3.4px;stroke-linejoin:round;pointer-events:none}
-.kmap .num{font-size:9.5px;font-weight:700;fill:var(--ink-55);font-family:var(--sans);letter-spacing:.04em;
+.kmap .num{font-size:10.5px;font-weight:700;fill:var(--ink-55);font-family:var(--sans);letter-spacing:.04em;
   paint-order:stroke;stroke:#F4F9FE;stroke-width:3px;pointer-events:none}
 
 .kmap .inset{fill:none;stroke:rgba(13,27,42,.24);stroke-dasharray:3 3}
@@ -311,7 +311,7 @@ footer.site .cp{padding-top:22px;font-size:11.5px;color:rgba(231,240,248,.55);di
 
 @media(max-width:1000px){
   .hero .wrap{grid-template-columns:1fr;gap:38px;padding-top:42px;padding-bottom:44px}
-  .kmap{margin:0 auto;max-width:360px}
+  .kmap{margin:0 auto;max-width:430px}
   .hero-art svg{opacity:.28}
   .guides,.prefgrid,.experts{grid-template-columns:repeat(2,1fr)}
   .cards{grid-template-columns:repeat(4,1fr)}
