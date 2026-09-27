@@ -29,7 +29,7 @@ python3 -m http.server -d site 8080
 | 変数 | 用途 | 例 |
 |---|---|---|
 | `KH_BASE` | 公開パス。GitHub Pages のプロジェクトページで必須 | `/kyushu-hojokin` |
-| `KH_BASE_URL` | canonical / OGP / sitemap 用の絶対 URL | `https://<user>.github.io/kyushu-hojokin` |
+| `KH_BASE_URL` | canonical / OGP / sitemap 用のオリジン（パスは含めない） | `https://<user>.github.io` |
 
 独自ドメインをルートで使う場合は `KH_BASE` を空にする。
 

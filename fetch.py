@@ -34,15 +34,23 @@ for pref in PREFS:
 print("total unique:", len(index), flush=True)
 os.makedirs(os.path.join(os.path.dirname(os.path.abspath(__file__)),"data"),exist_ok=True)
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)),"data","index.json")
-json.dump(index, open(out,"w",encoding="utf-8"), ensure_ascii=False, indent=1)
+json.dump(index, open(out,"w",encoding="utf-8"), ensure_ascii=False, separators=(",",":"))
+
+KEEP = ("id","name","title","subsidy_catch_phrase","detail","use_purpose","industry",
+        "target_area_search","target_area_detail","target_number_of_employees",
+        "subsidy_rate","subsidy_max_limit","acceptance_start_datetime","acceptance_end_datetime",
+        "project_end_deadline","request_reception_presence","is_enable_multiple_request",
+        "front_subsidy_detail_page_url","institution_name")
 
 details = {}
 ids = list(index.keys())
 for i, sid in enumerate(ids):
     d = get(f"{BASE}/id/{sid}")
     if d and d.get("result"):
-        details[sid] = d["result"][0]
+        r0 = d["result"][0]
+        # 添付ファイル（base64）等の巨大フィールドは捨てて、サイト生成に使う項目だけ残す
+        details[sid] = {k: r0.get(k) for k in KEEP}
     if i % 50 == 0: print(f"detail {i}/{len(ids)}", flush=True)
     time.sleep(0.12)
-json.dump(details, open(os.path.join(os.path.dirname(os.path.abspath(__file__)),"data","details.json"),"w",encoding="utf-8"), ensure_ascii=False, indent=1)
+json.dump(details, open(os.path.join(os.path.dirname(os.path.abspath(__file__)),"data","details.json"),"w",encoding="utf-8"), ensure_ascii=False, separators=(",",":"))
 print("details:", len(details), flush=True)

@@ -6,7 +6,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 OUT  = os.path.join(ROOT, "site")
 SITE_NAME = "九州補助金ナビ"
 SITE_DESC = "福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄の補助金／助成金を、国のオープンデータから毎回まとめて検索。"
-BASE_URL  = os.environ.get("KH_BASE_URL", "")     # 例: https://abengerz.github.io/kyushu-hojokin
+BASE_URL  = os.environ.get("KH_BASE_URL", "").rstrip("/")   # オリジン。例: https://abengerz.github.io
 TODAY     = datetime.date.today()
 TODAY_JP  = f"{TODAY.year}年{TODAY.month}月{TODAY.day}日"
 
@@ -55,8 +55,17 @@ def dateobj(s):
     return datetime.date(int(m.group(1)),int(m.group(2)),int(m.group(3))) if m else None
 
 # ---------------------------------------------------------------- データ読込
-idx = json.load(open(os.path.join(ROOT,"data","index.json"),encoding="utf-8"))
-det = json.load(open(os.path.join(ROOT,"data","details.json"),encoding="utf-8"))
+def _load(name, default):
+    fp = os.path.join(ROOT, "data", name)
+    if not os.path.exists(fp):
+        print(f"[warn] data/{name} がありません。fetch.py を先に実行してください。")
+        return default
+    return json.load(open(fp, encoding="utf-8"))
+
+idx = _load("index.json", {})
+det = _load("details.json", {})
+if not idx:
+    raise SystemExit("data/index.json が空です。`python3 fetch.py` を実行してください。")
 
 RECS = []
 for sid, base in idx.items():
@@ -113,12 +122,17 @@ INDUSTRY_LIST = [p for p,_ in INDUSTRIES.most_common()]
 P_SLUG = {p: slug(p) for p in PURPOSE_LIST}
 I_SLUG = {p: slug(p) for p in INDUSTRY_LIST}
 
+LOCAL = [r for r in RECS if not r["nationwide"]]
+N_LOCAL = len(LOCAL)
 def pref_recs(name): return [r for r in RECS if name in r["prefs"]]
+def pref_local(name): return [r for r in LOCAL if name in r["prefs"]]
 def purpose_recs(p): return [r for r in RECS if p in r["purpose"]]
 def industry_recs(p): return [r for r in RECS if p in r["industry"]]
 
 # ---------------------------------------------------------------- レイアウト
-BASE = os.environ.get("KH_BASE", "")   # 例: /kyushu-hojokin
+BASE = os.environ.get("KH_BASE", "").rstrip("/")   # 例: /kyushu-hojokin
+if BASE and BASE_URL.endswith(BASE):       # KH_BASE_URL にパスまで入れられた場合の保険
+    BASE_URL = BASE_URL[:-len(BASE)].rstrip("/")
 def U(p=""):
     p = p.lstrip("/")
     return (BASE + "/" + p) if p else (BASE + "/")
@@ -258,12 +272,12 @@ TILE = {"fukuoka":(112,4),"saga":(4,66),"oita":(220,66),
 def tilemap():
     cells = []
     for s,n,en,_ in PREFS:
-        x,y = TILE[s]; c = len(pref_recs(n)); o = len([r for r in pref_recs(n) if r["status"]=="open"])
+        x,y = TILE[s]; c = len(pref_recs(n)); o = len([r for r in pref_recs(n) if r["status"]=="open"]); lo = len(pref_local(n))
         cells.append(
             f'<a class="cell{" oki" if s=="okinawa" else ""}" href="{U("pref/"+s+"/")}" aria-label="{n}の補助金 {c}件">'
             f'<rect x="{x}" y="{y}" width="100" height="54"/>'
-            f'<text class="pn" x="{x+50}" y="{y+25}" text-anchor="middle">{n[:-1]}</text>'
-            f'<text class="pc" x="{x+50}" y="{y+42}" text-anchor="middle">{c}件 / 受付中{o}</text></a>')
+            f'<text class="pn" x="{x+50}" y="{y+24}" text-anchor="middle">{n[:-1]}</text>'
+            f'<text class="pc" x="{x+50}" y="{y+41}" text-anchor="middle">受付中 {o}件</text></a>')
     return (f'<svg class="tilemap" viewBox="0 0 324 330" role="img" aria-label="九州・沖縄8県マップ">'
             f'<line x1="4" y1="256" x2="320" y2="256" stroke="rgba(23,26,28,.2)" stroke-dasharray="2 4"/>'
             f'<text x="320" y="250" text-anchor="end" font-size="9" letter-spacing="1.5" fill="rgba(23,26,28,.35)" '
@@ -299,7 +313,7 @@ def build_index():
   <div>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
     <h1 class="hero-t"><span class="sm">福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄</span>
-      九州の会社が使える<br>補助金だけを、<span class="u">まとめて</span>。</h1>
+      九州の会社が使える<br>補助金だけを、<span style="white-space:nowrap"><span class="u">まとめて</span>。</span></h1>
     <p class="lead">全国版の検索サイトは情報が多すぎて、自社に関係のない制度ばかり出てきます。{SITE_NAME}は九州・沖縄8県を対象とする制度だけを国のオープンデータから抽出し、受付中かどうか・いくらもらえるか・いつ締め切るかを最初の一画面で示します。</p>
     <div class="hero-cta">
       <a class="btn" href="{U('search/')}">{N_OPEN}件の受付中制度を見る</a>
@@ -312,7 +326,7 @@ def build_index():
 <div class="ledger"><div class="wrap">
   <div><div class="n">{N_ALL:,}<em>件</em></div><div class="k">九州・沖縄が対象の制度</div></div>
   <div><div class="n">{N_OPEN:,}<em>件</em></div><div class="k">いま受付中</div></div>
-  <div><div class="n">8<em>県</em></div><div class="k">対応エリア</div></div>
+  <div><div class="n">{N_LOCAL:,}<em>件</em></div><div class="k">九州・沖縄に限定された制度</div></div>
   <div><div class="n">{yen(max([r['max'] for r in OPEN] or [0]))}</div><div class="k">受付中の最大補助額</div></div>
 </div></div>
 
@@ -661,7 +675,7 @@ def build_prefs():
 <div class="ledger"><div class="wrap">
  <div><div class="n">{len(rs):,}<em>件</em></div><div class="k">{n}が対象の制度</div></div>
  <div><div class="n">{len(op):,}<em>件</em></div><div class="k">いま受付中</div></div>
- <div><div class="n">{len(local):,}<em>件</em></div><div class="k">地域限定の制度</div></div>
+ <div><div class="n">{len(pref_local(n)):,}<em>件</em></div><div class="k">{n}を含む地域限定の制度</div></div>
  <div><div class="n">{yen(max([r['max'] for r in op] or [0]))}</div><div class="k">受付中の最大補助額</div></div>
 </div></div>
 

@@ -59,12 +59,12 @@ nav.main a:hover{border-bottom-color:var(--hi)}
 
 /* ---------- hero ---------- */
 .hero{border-bottom:1px solid var(--rule);overflow:hidden;position:relative}
-.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;padding-top:62px;padding-bottom:58px}
+.hero .wrap{display:grid;grid-template-columns:1.12fr .88fr;gap:52px;align-items:center;padding-top:62px;padding-bottom:58px}
 .eyebrow{font-size:11px;letter-spacing:.32em;color:var(--hi);font-weight:700;margin:0 0 20px}
 .eyebrow::before{content:"";display:inline-block;width:30px;height:1px;background:var(--hi);vertical-align:middle;margin-right:12px}
-h1.hero-t{font-family:var(--serif);font-weight:700;font-size:clamp(30px,4.3vw,52px);line-height:1.34;letter-spacing:.02em;margin:0 0 22px}
+h1.hero-t{font-family:var(--serif);font-weight:700;font-size:clamp(28px,3.6vw,46px);line-height:1.38;letter-spacing:.02em;margin:0 0 22px}
 h1.hero-t .u{background:linear-gradient(transparent 66%,rgba(195,69,43,.26) 66%)}
-h1.hero-t .sm{font-size:.56em;display:block;letter-spacing:.14em;color:var(--ink-55);margin-bottom:10px;font-weight:600}
+h1.hero-t .sm{font-size:.40em;display:block;letter-spacing:.14em;color:var(--ink-55);margin-bottom:10px;font-weight:600}
 .hero p.lead{font-size:15.5px;color:var(--ink-70);margin:0 0 30px;max-width:30em}
 .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
 
@@ -82,7 +82,7 @@ h1.hero-t .sm{font-size:.56em;display:block;letter-spacing:.14em;color:var(--ink
 .tilemap .cell{cursor:pointer;transition:.2s}
 .tilemap .cell rect{fill:var(--paper-2);stroke:var(--ink);stroke-width:1.1}
 .tilemap .cell .pn{font-family:var(--serif);font-weight:700;font-size:15px;fill:var(--ink)}
-.tilemap .cell .pc{font-size:10.5px;fill:var(--ink-40);font-family:var(--sans);font-weight:700;letter-spacing:.04em}
+.tilemap .cell .pc{font-size:10px;fill:var(--ink-40);font-family:var(--sans);font-weight:700;letter-spacing:.04em}
 .tilemap .cell:hover rect{fill:var(--ai);stroke:var(--ai)}
 .tilemap .cell:hover .pn{fill:#fff}
 .tilemap .cell:hover .pc{fill:rgba(255,255,255,.72)}
