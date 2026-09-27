@@ -39,46 +39,30 @@ MAX_PAGES = int(os.environ.get("MUNI_MAX_PAGES", "320"))  # 1自治体あたり�
 MAX_DEPTH = int(os.environ.get("MUNI_MAX_DEPTH", "2"))
 
 # ---- 対象自治体（トップページだけ指定すれば、事業者向けセクションは自動発見する）----
-SITES = [
- ("福岡県", "福岡県",     "https://www.pref.fukuoka.lg.jp/"),
- ("福岡県", "福岡市",     "https://www.city.fukuoka.lg.jp/"),
- ("福岡県", "北九州市",   "https://www.city.kitakyushu.lg.jp/"),
- ("福岡県", "久留米市",   "https://www.city.kurume.fukuoka.jp/"),
- ("福岡県", "飯塚市",     "https://www.city.iizuka.lg.jp/"),
- ("福岡県", "大牟田市",   "https://www.city.omuta.lg.jp/"),
- ("福岡県", "糸島市",     "https://www.city.itoshima.lg.jp/"),
- ("福岡県", "宗像市",     "https://www.city.munakata.lg.jp/"),
- ("佐賀県", "佐賀県",     "https://www.pref.saga.lg.jp/"),
- ("佐賀県", "佐賀市",     "https://www.city.saga.lg.jp/"),
- ("佐賀県", "唐津市",     "https://www.city.karatsu.lg.jp/"),
- ("佐賀県", "鳥栖市",     "https://www.city.tosu.lg.jp/"),
- ("長崎県", "長崎県",     "https://www.pref.nagasaki.jp/"),
- ("長崎県", "長崎市",     "https://www.city.nagasaki.lg.jp/"),
- ("長崎県", "佐世保市",   "https://www.city.sasebo.lg.jp/"),
- ("長崎県", "諫早市",     "https://www.city.isahaya.nagasaki.jp/"),
- ("熊本県", "熊本県",     "https://www.pref.kumamoto.jp/"),
- ("熊本県", "熊本市",     "https://www.city.kumamoto.jp/"),
- ("熊本県", "八代市",     "https://www.city.yatsushiro.lg.jp/"),
- ("熊本県", "天草市",     "https://www.city.amakusa.kumamoto.jp/"),
- ("大分県", "大分県",     "https://www.pref.oita.jp/"),
- ("大分県", "大分市",     "https://www.city.oita.oita.jp/"),
- ("大分県", "別府市",     "https://www.city.beppu.oita.jp/"),
- ("大分県", "中津市",     "https://www.city.nakatsu.lg.jp/"),
- ("宮崎県", "宮崎県",     "https://www.pref.miyazaki.lg.jp/"),
- ("宮崎県", "宮崎市",     "https://www.city.miyazaki.miyazaki.jp/"),
- ("宮崎県", "都城市",     "https://www.city.miyakonojo.miyazaki.jp/"),
- ("宮崎県", "延岡市",     "https://www.city.nobeoka.miyazaki.jp/"),
+PREF_SITES = [
+ ("福岡県", "福岡県", "https://www.pref.fukuoka.lg.jp/"),
+ ("佐賀県", "佐賀県", "https://www.pref.saga.lg.jp/"),
+ ("長崎県", "長崎県", "https://www.pref.nagasaki.jp/"),
+ ("熊本県", "熊本県", "https://www.pref.kumamoto.jp/"),
+ ("大分県", "大分県", "https://www.pref.oita.jp/"),
+ ("宮崎県", "宮崎県", "https://www.pref.miyazaki.lg.jp/"),
  ("鹿児島県", "鹿児島県", "https://www.pref.kagoshima.jp/"),
- ("鹿児島県", "鹿児島市", "https://www.city.kagoshima.lg.jp/"),
- ("鹿児島県", "霧島市",   "https://www.city-kirishima.jp/"),
- ("鹿児島県", "鹿屋市",   "https://www.city.kanoya.lg.jp/"),
- ("沖縄県", "沖縄県",     "https://www.pref.okinawa.jp/"),
- ("沖縄県", "那覇市",     "https://www.city.naha.okinawa.jp/"),
- ("沖縄県", "沖縄市",     "https://www.city.okinawa.okinawa.jp/"),
- ("沖縄県", "うるま市",   "https://www.city.uruma.lg.jp/"),
- ("沖縄県", "浦添市",     "https://www.city.urasoe.lg.jp/"),
- ("沖縄県", "宮古島市",   "https://www.city.miyakojima.lg.jp/"),
+ ("沖縄県", "沖縄県", "https://www.pref.okinawa.jp/"),
 ]
+
+
+def load_sites():
+    """data/municipalities.json（Wikidata由来・九州沖縄276市町村）＋8県。"""
+    fp = os.path.join(ROOT, "data", "municipalities.json")
+    sites = list(PREF_SITES)
+    if os.path.exists(fp):
+        for m in json.load(open(fp, encoding="utf-8")):
+            if m.get("site"):
+                sites.append((m["pref"], m["muni"], m["site"]))
+    return sites
+
+
+SITES = load_sites()
 
 ENTRY_RE = re.compile(r"事業者|産業|ビジネス|商工|企業|しごと|仕事|農林|水産|観光|創業|起業|雇用|就労")
 HIT_RE = re.compile(r"補助金|助成金|支援金|奨励金|給付金|利子補給|補助事業|支援事業|補助制度|助成制度|支援制度")
@@ -149,6 +133,12 @@ def blocked(path, rules):
 def text_of(h):
     h = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", " ", h, flags=re.S | re.I)
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", h))).strip()
+
+
+def page_h1(h):
+    m = re.search(r"<h1[^>]*>(.*?)</h1>", h, re.S | re.I)
+    if not m: return ""
+    return html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1)))).strip()[:120]
 
 
 def page_title(h):
@@ -242,14 +232,30 @@ def harvest(pref, name, base, cache):
             out.append((u, txt))
         return out
 
-    seeds = [u for u, t in links(start, home) if ENTRY_RE.search(t) and len(t) <= 20]
+    all_links = links(start, home)
+    seeds = [u for u, t in all_links if ENTRY_RE.search(t) and len(t) <= 30]
+    # リンク文字が画像のみのサイト向けに、title / alt 属性も拾う
+    if len(seeds) < 2:
+        for m in re.finditer(r'<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>', home, re.I):
+            tag = m.group(0)
+            at = " ".join(re.findall(r'(?:title|alt|aria-label)=["\']([^"\']{2,30})["\']', tag, re.I))
+            if at and ENTRY_RE.search(at):
+                u2 = urllib.parse.urljoin(start, m.group(1)).split("#")[0]
+                if urllib.parse.urlparse(u2).netloc == host:
+                    seeds.append(u2)
     seeds = list(dict.fromkeys(seeds))
+    whole_site = False
+    if not seeds:
+        # 事業者向けの入口が見つからないサイトは、トップから全体をたどる
+        seeds, whole_site = [start], True
     # 巡回はシード配下に限定する。これをしないと住宅・福祉など無関係な区画へ流れ出す
     prefixes = []
     for u in seeds:
         path = urllib.parse.urlparse(u).path
         prefixes.append(path if path.endswith("/") else path.rsplit("/", 1)[0] + "/")
     prefixes = sorted(set(p for p in prefixes if len(p) > 1))
+    if whole_site or not prefixes:
+        prefixes = ["/"]
 
     def in_scope(u):
         p = urllib.parse.urlparse(u).path
@@ -278,6 +284,9 @@ def harvest(pref, name, base, cache):
                     cache[u] = {"t": ""}
                 continue
             title = page_title(h)
+            h1 = page_h1(h)
+            if h1 and not HIT_RE.search(title) and HIT_RE.search(h1):
+                title = h1          # 見出しのほうが制度名を表しているケース
             outlinks = links(u, h)
             # 巡回に使うリンクを保存しておく（再実行を軽くするため）
             cache[u] = {"t": title,

@@ -1,0 +1,1658 @@
+[
+ {
+  "pref": "福岡県",
+  "muni": "北九州市",
+  "code": "401005",
+  "site": "https://www.city.kitakyushu.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "福岡市",
+  "code": "401307",
+  "site": "https://www.city.fukuoka.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "大牟田市",
+  "code": "402028",
+  "site": "https://www.city.omuta.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "久留米市",
+  "code": "402036",
+  "site": "https://www.city.kurume.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "直方市",
+  "code": "402044",
+  "site": "https://www.city.nogata.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "飯塚市",
+  "code": "402052",
+  "site": "https://www.city.iizuka.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "田川市",
+  "code": "402061",
+  "site": "https://www.joho.tagawa.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "柳川市",
+  "code": "402079",
+  "site": "https://www.city.yanagawa.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "八女市",
+  "code": "402109",
+  "site": "https://www.city.yame.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "筑後市",
+  "code": "402117",
+  "site": "https://www.city.chikugo.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "大川市",
+  "code": "402125",
+  "site": "https://www.city.okawa.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "行橋市",
+  "code": "402133",
+  "site": "https://www.city.yukuhashi.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "豊前市",
+  "code": "402141",
+  "site": "https://www.city.buzen.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "中間市",
+  "code": "402150",
+  "site": "https://www.city.nakama.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "小郡市",
+  "code": "402168",
+  "site": "https://www.city.ogori.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "筑紫野市",
+  "code": "402176",
+  "site": "https://www.city.chikushino.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "春日市",
+  "code": "402184",
+  "site": "https://www.city.kasuga.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "大野城市",
+  "code": "402192",
+  "site": "https://www.city.onojo.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "宗像市",
+  "code": "402206",
+  "site": "https://www.city.munakata.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "太宰府市",
+  "code": "402214",
+  "site": "https://www.city.dazaifu.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "古賀市",
+  "code": "402231",
+  "site": "https://www.city.koga.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "福津市",
+  "code": "402249",
+  "site": "https://www.city.fukutsu.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "うきは市",
+  "code": "402257",
+  "site": "https://www.city.ukiha.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "宮若市",
+  "code": "402265",
+  "site": "https://www.city.miyawaka.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "嘉麻市",
+  "code": "402273",
+  "site": "https://www.city.kama.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "朝倉市",
+  "code": "402281",
+  "site": "https://www.city.asakura.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "みやま市",
+  "code": "402290",
+  "site": "https://www.city.miyama.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "糸島市",
+  "code": "402303",
+  "site": "https://www.city.itoshima.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "那珂川市",
+  "code": "402311",
+  "site": "https://www.city.nakagawa.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "宇美町",
+  "code": "403415",
+  "site": "https://www.town.umi.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "篠栗町",
+  "code": "403423",
+  "site": "https://www.town.sasaguri.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "志免町",
+  "code": "403431",
+  "site": "https://www.town.shime.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "須恵町",
+  "code": "403440",
+  "site": "https://www.town.sue.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "新宮町",
+  "code": "403458",
+  "site": "https://www.town.shingu.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "久山町",
+  "code": "403482",
+  "site": "https://www.town.hisayama.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "粕屋町",
+  "code": "403491",
+  "site": "https://www.town.kasuya.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "芦屋町",
+  "code": "403814",
+  "site": "https://www.town.ashiya.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "水巻町",
+  "code": "403822",
+  "site": "https://www.town.mizumaki.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "岡垣町",
+  "code": "403831",
+  "site": "https://www.town.okagaki.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "遠賀町",
+  "code": "403849",
+  "site": "https://www.town.onga.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "小竹町",
+  "code": "404012",
+  "site": "https://town.kotake.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "鞍手町",
+  "code": "404021",
+  "site": "https://www.town.kurate.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "桂川町",
+  "code": "404217",
+  "site": "https://www.town.keisen.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "筑前町",
+  "code": "404471",
+  "site": "https://www.town.chikuzen.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "東峰村",
+  "code": "404489",
+  "site": "https://vill.toho-info.com/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "大刀洗町",
+  "code": "405035",
+  "site": "https://www.town.tachiarai.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "大木町",
+  "code": "405221",
+  "site": "https://www.town.ooki.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "広川町",
+  "code": "405442",
+  "site": "https://www.town.hirokawa.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "香春町",
+  "code": "406015",
+  "site": "https://www.town.kawara.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "添田町",
+  "code": "406023",
+  "site": "https://www.town.soeda.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "糸田町",
+  "code": "406040",
+  "site": "https://www.town.itoda.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "川崎町",
+  "code": "406058",
+  "site": "https://www.town-kawasaki.com/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "大任町",
+  "code": "406082",
+  "site": "https://www.town.oto.fukuoka.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "赤村",
+  "code": "406091",
+  "site": "https://www.akamura.net/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "福智町",
+  "code": "406104",
+  "site": "https://www.town.fukuchi.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "苅田町",
+  "code": "406210",
+  "site": "https://www.town.kanda.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "みやこ町",
+  "code": "406252",
+  "site": "https://www.town.miyako.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "吉富町",
+  "code": "406422",
+  "site": "https://www.town.yoshitomi.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "上毛町",
+  "code": "406465",
+  "site": "https://www.town.koge.lg.jp/"
+ },
+ {
+  "pref": "福岡県",
+  "muni": "築上町",
+  "code": "406473",
+  "site": "https://www.town.chikujo.fukuoka.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "佐賀市",
+  "code": "412015",
+  "site": "https://www.city.saga.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "唐津市",
+  "code": "412023",
+  "site": "https://www.city.karatsu.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "鳥栖市",
+  "code": "412031",
+  "site": "https://www.city.tosu.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "多久市",
+  "code": "412040",
+  "site": "https://www.city.taku.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "伊万里市",
+  "code": "412058",
+  "site": "https://www.city.imari.saga.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "武雄市",
+  "code": "412066",
+  "site": "https://www.city.takeo.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "鹿島市",
+  "code": "412074",
+  "site": "https://www.city.saga-kashima.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "小城市",
+  "code": "412082",
+  "site": "https://www.city.ogi.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "嬉野市",
+  "code": "412091",
+  "site": "https://www.city.ureshino.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "神埼市",
+  "code": "412104",
+  "site": "https://www.city.kanzaki.saga.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "吉野ヶ里町",
+  "code": "413275",
+  "site": "https://www.town.yoshinogari.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "基山町",
+  "code": "413411",
+  "site": "https://www.town.kiyama.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "上峰町",
+  "code": "413453",
+  "site": "https://www.town.kamimine.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "みやき町",
+  "code": "413461",
+  "site": "https://www.town.miyaki.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "玄海町",
+  "code": "413879",
+  "site": "https://www.town.genkai.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "有田町",
+  "code": "414018",
+  "site": "https://www.town.arita.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "大町町",
+  "code": "414239",
+  "site": "https://www.town.omachi.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "江北町",
+  "code": "414247",
+  "site": "https://www.town.kouhoku.saga.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "白石町",
+  "code": "414255",
+  "site": "https://www.town.shiroishi.lg.jp/"
+ },
+ {
+  "pref": "佐賀県",
+  "muni": "太良町",
+  "code": "414417",
+  "site": "https://www.town.tara.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "長崎市",
+  "code": "422011",
+  "site": "https://www.city.nagasaki.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "佐世保市",
+  "code": "422029",
+  "site": "https://www.city.sasebo.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "島原市",
+  "code": "422037",
+  "site": "https://www.city.shimabara.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "諫早市",
+  "code": "422045",
+  "site": "https://www.city.isahaya.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "大村市",
+  "code": "422053",
+  "site": "https://www.city.omura.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "平戸市",
+  "code": "422070",
+  "site": "https://en.city.hirado.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "松浦市",
+  "code": "422088",
+  "site": "https://www.city-matsuura.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "対馬市",
+  "code": "422096",
+  "site": "https://www.city.tsushima.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "壱岐市",
+  "code": "422100",
+  "site": "https://www.city.iki.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "五島市",
+  "code": "422118",
+  "site": "https://www.city.goto.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "西海市",
+  "code": "422126",
+  "site": "https://www.city.saikai.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "雲仙市",
+  "code": "422134",
+  "site": "https://www.city.unzen.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "南島原市",
+  "code": "422142",
+  "site": "https://www.city.minamishimabara.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "長与町",
+  "code": "423076",
+  "site": "https://webtown.nagayo.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "時津町",
+  "code": "423084",
+  "site": "https://www.town.togitsu.nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "東彼杵町",
+  "code": "423211",
+  "site": "https://www.town.higashisonogi.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "川棚町",
+  "code": "423220",
+  "site": "https://www.kawatana.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "波佐見町",
+  "code": "423238",
+  "site": "https://www.town.hasami.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "小値賀町",
+  "code": "423831",
+  "site": "https://www.town.ojika.lg.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "佐々町",
+  "code": "423912",
+  "site": "https://www.sazacho-nagasaki.jp/"
+ },
+ {
+  "pref": "長崎県",
+  "muni": "新上五島町",
+  "code": "424111",
+  "site": "https://official.shinkamigoto.net/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "熊本市",
+  "code": "431001",
+  "site": "https://www.city.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "八代市",
+  "code": "432024",
+  "site": "https://www.city.yatsushiro.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "人吉市",
+  "code": "432032",
+  "site": "https://www.city.hitoyoshi.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "荒尾市",
+  "code": "432041",
+  "site": "https://www.city.arao.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "水俣市",
+  "code": "432059",
+  "site": "https://www.city.minamata.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "玉名市",
+  "code": "432067",
+  "site": "https://www.city.tamana.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "山鹿市",
+  "code": "432083",
+  "site": "https://www.city.yamaga.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "菊池市",
+  "code": "432105",
+  "site": "https://www.city.kikuchi.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "宇土市",
+  "code": "432113",
+  "site": "https://www.city.uto.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "上天草市",
+  "code": "432121",
+  "site": "https://www.city.kamiamakusa.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "宇城市",
+  "code": "432130",
+  "site": "https://www.city.uki.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "阿蘇市",
+  "code": "432148",
+  "site": "https://www.city.aso.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "天草市",
+  "code": "432156",
+  "site": "https://www.city.amakusa.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "合志市",
+  "code": "432164",
+  "site": "https://www.city.koshi.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "美里町",
+  "code": "433489",
+  "site": "https://www.town.kumamoto-misato.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "玉東町",
+  "code": "433641",
+  "site": "https://www.town.gyokuto.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "南関町",
+  "code": "433675",
+  "site": "https://www.town.nankan.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "長洲町",
+  "code": "433683",
+  "site": "https://www.town.nagasu.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "和水町",
+  "code": "433691",
+  "site": "https://www.town.nagomi.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "植木町",
+  "code": "433853",
+  "site": ""
+ },
+ {
+  "pref": "熊本県",
+  "muni": "田底村",
+  "code": "433861",
+  "site": ""
+ },
+ {
+  "pref": "熊本県",
+  "muni": "大津町",
+  "code": "434035",
+  "site": "https://www.town.ozu.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "菊陽町",
+  "code": "434043",
+  "site": "https://www.town.kikuyo.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "南小国町",
+  "code": "434230",
+  "site": "https://www.town.minamioguni.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "小国町",
+  "code": "434248",
+  "site": "https://www.town.kumamoto-oguni.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "産山村",
+  "code": "434256",
+  "site": "https://www.ubuyama-v.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "高森町",
+  "code": "434281",
+  "site": "https://www.town.takamori.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "西原村",
+  "code": "434329",
+  "site": "https://www.vill.nishihara.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "南阿蘇村",
+  "code": "434337",
+  "site": "https://www.vill.minamiaso.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "御船町",
+  "code": "434418",
+  "site": "https://www.town.mifune.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "嘉島町",
+  "code": "434426",
+  "site": "https://www.town.kumamoto-kashima.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "益城町",
+  "code": "434434",
+  "site": "https://www.town.mashiki.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "甲佐町",
+  "code": "434442",
+  "site": "https://www.town.kosa.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "山都町",
+  "code": "434477",
+  "site": "https://www.town.kumamoto-yamato.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "氷川町",
+  "code": "434680",
+  "site": "https://www.town.hikawa.kumamoto.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "芦北町",
+  "code": "434825",
+  "site": "https://www.town.ashikita.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "津奈木町",
+  "code": "434841",
+  "site": "https://www.town.tsunagi.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "錦町",
+  "code": "435015",
+  "site": "https://www.town.kumamoto-nishiki.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "多良木町",
+  "code": "435058",
+  "site": "https://www.town.taragi.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "湯前町",
+  "code": "435066",
+  "site": "https://www.town.yunomae.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "水上村",
+  "code": "435074",
+  "site": "https://www.vill.mizukami.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "相良村",
+  "code": "435104",
+  "site": "https://www.vill.sagara.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "五木村",
+  "code": "435112",
+  "site": "https://www.vill.itsuki.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "山江村",
+  "code": "435121",
+  "site": "https://www.vill.yamae.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "球磨村",
+  "code": "435139",
+  "site": "https://www.kumamura.com/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "あさぎり町",
+  "code": "435147",
+  "site": "https://www.town.asagiri.lg.jp/"
+ },
+ {
+  "pref": "熊本県",
+  "muni": "苓北町",
+  "code": "435317",
+  "site": "https://reihoku-kumamoto.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "大分市",
+  "code": "442011",
+  "site": "https://www.city.oita.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "別府市",
+  "code": "442020",
+  "site": "https://www.city.beppu.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "中津市",
+  "code": "442038",
+  "site": "https://www.city-nakatsu.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "日田市",
+  "code": "442046",
+  "site": "https://www.city.hita.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "佐伯市",
+  "code": "442054",
+  "site": "https://www.city.saiki.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "臼杵市",
+  "code": "442062",
+  "site": "https://www.city.usuki.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "津久見市",
+  "code": "442071",
+  "site": "https://www.city.tsukumi.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "竹田市",
+  "code": "442089",
+  "site": "https://www.city.taketa.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "豊後高田市",
+  "code": "442097",
+  "site": "https://www.city.bungotakada.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "杵築市",
+  "code": "442101",
+  "site": "https://www.city.kitsuki.lg.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "宇佐市",
+  "code": "442119",
+  "site": "https://www.city.usa.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "豊後大野市",
+  "code": "442127",
+  "site": "https://www.bungo-ohno.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "由布市",
+  "code": "442135",
+  "site": "https://www.city.yufu.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "国東市",
+  "code": "442143",
+  "site": "https://www.city.kunisaki.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "姫島村",
+  "code": "443221",
+  "site": "https://www.himeshima.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "日出町",
+  "code": "443417",
+  "site": "https://www.town.hiji.lg.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "九重町",
+  "code": "444618",
+  "site": "https://www.town.kokonoe.oita.jp/"
+ },
+ {
+  "pref": "大分県",
+  "muni": "玖珠町",
+  "code": "444626",
+  "site": "https://www.town.kusu.oita.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "宮崎市",
+  "code": "452017",
+  "site": "https://www.city.miyazaki.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "都城市",
+  "code": "452025",
+  "site": "https://www.city.miyakonojo.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "延岡市",
+  "code": "452033",
+  "site": "https://www.city.nobeoka.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "日南市",
+  "code": "452041",
+  "site": "https://www.city.nichinan.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "小林市",
+  "code": "452050",
+  "site": "https://www.city.kobayashi.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "日向市",
+  "code": "452068",
+  "site": "https://www.hyugacity.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "串間市",
+  "code": "452076",
+  "site": "https://www.city.kushima.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "西都市",
+  "code": "452084",
+  "site": "https://www.city.saito.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "えびの市",
+  "code": "452092",
+  "site": "https://www.city.ebino.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "三股町",
+  "code": "453412",
+  "site": "https://www.town.mimata.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "高原町",
+  "code": "453617",
+  "site": "https://www.town.takaharu.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "国富町",
+  "code": "453820",
+  "site": "https://www.town.kunitomi.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "綾町",
+  "code": "453838",
+  "site": "https://www.town.aya.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "高鍋町",
+  "code": "454010",
+  "site": "https://www.town.takanabe.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "新富町",
+  "code": "454028",
+  "site": "https://www.town.shintomi.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "西米良村",
+  "code": "454036",
+  "site": "https://www.vill.nishimera.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "木城町",
+  "code": "454044",
+  "site": "https://www.town.kijo.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "川南町",
+  "code": "454052",
+  "site": "https://www.town.kawaminami.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "都農町",
+  "code": "454061",
+  "site": "https://www.town.tsuno.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "門川町",
+  "code": "454214",
+  "site": "https://www.town.kadogawa.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "諸塚村",
+  "code": "454290",
+  "site": "https://www.vill.morotsuka.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "椎葉村",
+  "code": "454303",
+  "site": "https://www.vill.shiiba.miyazaki.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "美郷町",
+  "code": "454311",
+  "site": "https://www.town.miyazaki-misato.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "高千穂町",
+  "code": "454419",
+  "site": "https://www.town-takachiho.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "日之影町",
+  "code": "454427",
+  "site": "https://www.town.hinokage.lg.jp/"
+ },
+ {
+  "pref": "宮崎県",
+  "muni": "五ヶ瀬町",
+  "code": "454435",
+  "site": "https://www.town.gokase.miyazaki.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "鹿児島市",
+  "code": "462012",
+  "site": "https://www.city.kagoshima.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "鹿屋市",
+  "code": "462039",
+  "site": "https://www.city.kanoya.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "枕崎市",
+  "code": "462047",
+  "site": "https://www.city.makurazaki.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "阿久根市",
+  "code": "462063",
+  "site": "https://www.city.akune.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "出水市",
+  "code": "462080",
+  "site": "https://www.city.kagoshima-izumi.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "指宿市",
+  "code": "462101",
+  "site": "https://www.city.ibusuki.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "西之表市",
+  "code": "462136",
+  "site": "https://www.city.nishinoomote.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "垂水市",
+  "code": "462144",
+  "site": "https://www.city.tarumizu.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "薩摩川内市",
+  "code": "462152",
+  "site": "https://www.city.satsumasendai.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "日置市",
+  "code": "462161",
+  "site": "https://www.city.hioki.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "曽於市",
+  "code": "462179",
+  "site": "https://www.city.soo.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "霧島市",
+  "code": "462187",
+  "site": "https://www.city-kirishima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "いちき串木野市",
+  "code": "462195",
+  "site": "https://www.city.ichikikushikino.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "南さつま市",
+  "code": "462209",
+  "site": "https://www.city.minamisatsuma.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "志布志市",
+  "code": "462217",
+  "site": "https://www.city.shibushi.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "奄美市",
+  "code": "462225",
+  "site": "https://www.city.amami.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "南九州市",
+  "code": "462233",
+  "site": "https://www.city.minamikyushu.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "伊佐市",
+  "code": "462241",
+  "site": "https://www.city.isa.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "姶良市",
+  "code": "462250",
+  "site": "https://www.city.aira.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "三島村",
+  "code": "463035",
+  "site": "http://mishimamura.com/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "十島村",
+  "code": "463043",
+  "site": "http://www.tokara.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "さつま町",
+  "code": "463922",
+  "site": "https://www.satsuma-net.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "長島町",
+  "code": "464040",
+  "site": "https://www.town.nagashima.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "湧水町",
+  "code": "464520",
+  "site": "https://www.town.yusui.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "大崎町",
+  "code": "464686",
+  "site": "https://www.town.kagoshima-osaki.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "東串良町",
+  "code": "464821",
+  "site": "https://www.higashikushira.com/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "錦江町",
+  "code": "464902",
+  "site": "https://www.town.kinko.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "南大隅町",
+  "code": "464911",
+  "site": "https://www.town.minamiosumi.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "肝付町",
+  "code": "464929",
+  "site": "https://www.kimotsuki-town.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "中種子町",
+  "code": "465011",
+  "site": "https://town.nakatane.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "南種子町",
+  "code": "465020",
+  "site": "http://www.town.minamitane.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "屋久島町",
+  "code": "465054",
+  "site": "https://www.town.yakushima.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "大和村",
+  "code": "465232",
+  "site": "https://www.vill.yamato.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "宇検村",
+  "code": "465241",
+  "site": "https://www.uken.net/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "瀬戸内町",
+  "code": "465259",
+  "site": "https://www.town.setouchi.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "龍郷町",
+  "code": "465275",
+  "site": "https://www.town.tatsugo.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "喜界町",
+  "code": "465291",
+  "site": "https://www.town.kikai.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "徳之島町",
+  "code": "465305",
+  "site": "https://www.tokunoshima-town.org/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "天城町",
+  "code": "465313",
+  "site": "https://www.town.amagi.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "伊仙町",
+  "code": "465321",
+  "site": "https://www.town.isen.kagoshima.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "和泊町",
+  "code": "465330",
+  "site": "https://www.town.wadomari.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "知名町",
+  "code": "465348",
+  "site": "https://www.town.china.lg.jp/"
+ },
+ {
+  "pref": "鹿児島県",
+  "muni": "与論町",
+  "code": "465356",
+  "site": "https://www.yoron.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "那覇市",
+  "code": "472018",
+  "site": "https://www.city.naha.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "宜野湾市",
+  "code": "472051",
+  "site": "https://www.city.ginowan.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "石垣市",
+  "code": "472077",
+  "site": "https://www.city.ishigaki.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "浦添市",
+  "code": "472085",
+  "site": "https://www.city.urasoe.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "名護市",
+  "code": "472093",
+  "site": "https://www.city.nago.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "糸満市",
+  "code": "472107",
+  "site": "https://www.city.itoman.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "沖縄市",
+  "code": "472115",
+  "site": "https://www.city.okinawa.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "豊見城市",
+  "code": "472123",
+  "site": "https://www.city.tomigusuku.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "うるま市",
+  "code": "472131",
+  "site": "https://www.city.uruma.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "宮古島市",
+  "code": "472140",
+  "site": "https://www.city.miyakojima.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "南城市",
+  "code": "472158",
+  "site": "https://www.city.nanjo.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "国頭村",
+  "code": "473014",
+  "site": "http://www.vill.kunigami.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "大宜味村",
+  "code": "473022",
+  "site": "https://www.vill.ogimi.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "東村",
+  "code": "473031",
+  "site": "https://www.vill.higashi.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "今帰仁村",
+  "code": "473065",
+  "site": "https://www.nakijin.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "本部町",
+  "code": "473081",
+  "site": "https://www.town.motobu.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "恩納村",
+  "code": "473111",
+  "site": "https://www.vill.onna.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "宜野座村",
+  "code": "473138",
+  "site": "http://www.vill.ginoza.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "金武町",
+  "code": "473146",
+  "site": "https://www.town.kin.okinawa.jp"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "伊江村",
+  "code": "473154",
+  "site": "https://www.iejima.org/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "読谷村",
+  "code": "473243",
+  "site": "https://www.vill.yomitan.okinawa.jp/index.html"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "嘉手納町",
+  "code": "473251",
+  "site": "https://www.town.kadena.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "北谷町",
+  "code": "473260",
+  "site": "https://www.chatan.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "北中城村",
+  "code": "473278",
+  "site": "https://www.vill.kitanakagusuku.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "中城村",
+  "code": "473286",
+  "site": "https://www.vill.nakagusuku.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "西原町",
+  "code": "473294",
+  "site": "https://www.town.nishihara.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "与那原町",
+  "code": "473481",
+  "site": "https://www.town.yonabaru.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "南風原町",
+  "code": "473502",
+  "site": "https://www.town.haebaru.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "渡嘉敷村",
+  "code": "473537",
+  "site": "https://www.vill.tokashiki.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "座間味村",
+  "code": "473545",
+  "site": "https://www.vill.zamami.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "粟国村",
+  "code": "473553",
+  "site": "https://www.vill.aguni.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "渡名喜村",
+  "code": "473561",
+  "site": "http://www.vill.tonaki.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "南大東村",
+  "code": "473570",
+  "site": "http://www.vill.minamidaito.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "北大東村",
+  "code": "473588",
+  "site": "https://vill.kitadaito.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "伊平屋村",
+  "code": "473596",
+  "site": "https://www.vill.iheya.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "伊是名村",
+  "code": "473600",
+  "site": "https://vill.izena.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "久米島町",
+  "code": "473618",
+  "site": "https://www.town.kumejima.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "八重瀬町",
+  "code": "473626",
+  "site": "https://www.town.yaese.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "多良間村",
+  "code": "473758",
+  "site": "https://www.vill.tarama.okinawa.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "竹富町",
+  "code": "473812",
+  "site": "https://www.town.taketomi.lg.jp/"
+ },
+ {
+  "pref": "沖縄県",
+  "muni": "与那国町",
+  "code": "473821",
+  "site": "https://www.town.yonaguni.okinawa.jp/"
+ }
+]

@@ -378,14 +378,22 @@ def build_index():
     body = f"""
 <div class="hero">{HERO_ART}<div class="wrap">
   <div>
-    <span class="hero-badge"><i></i>申請支援は着手金0円・完全成果報酬 5%〜</span>
     <p class="eyebrow">KYUSHU &amp; OKINAWA / 8 PREFECTURES</p>
     <h1 class="hero-t"><span class="sm">福岡・佐賀・長崎・熊本・大分・宮崎・鹿児島・沖縄</span>
       九州の会社が使える<br>補助金だけを、<span style="white-space:nowrap"><span class="u">まとめて</span>。</span></h1>
     <p class="lead">全国版の検索サイトは情報が多すぎて、自社に関係のない制度ばかり出てきます。{SITE_NAME}は九州・沖縄8県を対象とする制度だけを国のオープンデータから抽出し、受付中かどうか・いくらもらえるか・いつ締め切るかを最初の一画面で示します。</p>
+    <div class="hero-offer">
+      <div class="ho-l"><span>申請支援は</span><b>着手金0円・完全成果報酬</b></div>
+      <div class="ho-r"><em>5<i>%〜</i></em><small>最低10万円〜</small></div>
+    </div>
+    <div class="hero-chips">
+      <span><i></i>相談・制度選びは無料</span>
+      <span><i></i>不採択なら費用0円</span>
+      <span><i></i>九州・沖縄の士業が伴走</span>
+    </div>
     <div class="hero-cta">
       <a class="btn" href="{U('search/')}">{N_OPEN}件の受付中制度を見る</a>
-      <a class="btn ghost" href="{U()}#shindan">30秒で自社向けを絞り込む</a>
+      <a class="btn ghost" href="{U('experts/')}">申請支援の詳細を見る</a>
     </div>
   </div>
   <div>{kmap()}</div>
