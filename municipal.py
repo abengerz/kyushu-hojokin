@@ -79,7 +79,7 @@ DROP_RE = re.compile(
     r"採択結果|選定結果|審査結果|交付決定|結果について|結果の公表|一次公募の結果|"
     r"企画提案|プロポーザル|業務委託|入札|見積(?:合わせ|依頼)|指名competitive|"
     r"要望調査|意向調査|アンケート|説明会|セミナー|研修会の開催|相談会|"
-    r"法の改正|法改正|改正されました|創設されました|お知らせ$|ご案内$|について$|"
+    r"法の改正|法改正|改正されました|創設されました|お知らせ$|"
     r"報告記事|質問と回答|Ｑ＆Ａ|Q&A|よくある質問|見直し|交付要綱|実施要領|取扱要領|"
     r"様式|記入例|手引き|過去の|平成\d+年度|一覧表|実績|検証|評価結果|"
     r"ガイドライン|適正化|交付規則|条例|規程|基本方針|パブリックコメント")
@@ -272,6 +272,10 @@ HUB_RE = re.compile(r"一覧|の紹介$|各種支援|まとめ$|リンク集")
 RELAY_RE = re.compile(r"【(厚生労働省|経済産業省|中小企業庁|国土交通省|農林水産省|環境省|内閣府)】|"
                       r"^国の(補助金|支援)")
 
+TAIL_RE = re.compile(r"(?:の(?:ご案内|案内|お知らせ)|について(?:のお知らせ)?|のページ|を実施します|"
+                     r"を募集します|の募集について|のご紹介|します！?|しています)$")
+
+
 def clean_title(t, muni):
     """「久留米市：〜」「福岡市 〜」のような自治体名の接頭辞・接尾辞を落とす。"""
     t = t.replace("\u3000", " ").strip()
@@ -279,6 +283,10 @@ def clean_title(t, muni):
         t = re.sub(r"^\s*" + re.escape(name) + r"\s*[：:｜|／/、　\-–—]*\s*", "", t).strip()
         t = re.sub(r"\s*[｜|／/・]\s*" + re.escape(name) + r"\s*$", "", t).strip()
     t = re.sub(r"\s{2,}", " ", t)
+    for _ in range(2):                      # 「〜のご案内」等の語尾は落とす
+        t2 = TAIL_RE.sub("", t).strip("　 、。・")
+        if t2 == t or len(t2) < 6: break
+        t = t2
     # 「大分市への企業立地…」から接頭辞を剥がすと「への企業立地…」になってしまう
     if re.match(r"^[へにをはがのでとも、。]", t):
         return ""
@@ -286,7 +294,7 @@ def clean_title(t, muni):
 
 
 def is_hub(t):
-    return (t in HUB_TITLES or len(t) < 8 or bool(HUB_RE.search(t))
+    return (t in HUB_TITLES or len(t) < 6 or bool(HUB_RE.search(t))
             or bool(RELAY_RE.search(t)) or bool(DROP_RE.search(t)))
 
 
@@ -308,7 +316,7 @@ def extract(url, h):
     return rec
 
 
-def harvest(pref, name, base, cache):
+def harvest(pref, name, base, cache, force_whole=False):
     host = urllib.parse.urlparse(base).netloc
     rules = robots_disallow(base)
     try:
@@ -343,11 +351,13 @@ def harvest(pref, name, base, cache):
     seeds = list(dict.fromkeys(seeds))
     # 入口が少ない小規模自治体は、事業者向けの区画が浅く名前も揃っていない。
     # 2件以下ならサイト全体を対象にする（タイトルで絞るので精度は保てる）。
-    whole_site = len(seeds) < 3
+    whole_site = force_whole or len(seeds) < 6
     if not seeds:
         seeds = [start]
     if whole_site and start not in seeds:
         seeds = [start] + seeds
+    if force_whole:
+        seeds = [start]
     # 巡回はシード配下に限定する。これをしないと住宅・福祉など無関係な区画へ流れ出す
     prefixes = []
     for u in seeds:
@@ -431,6 +441,10 @@ def harvest(pref, name, base, cache):
         if k not in best or score > best[k][0]:
             best[k] = (score, r)
     found = [v[1] for v in best.values()]
+    if not found and not whole_site and fetched > 0:
+        # 事業者向けの区画に制度ページが無いサイトがある。範囲を広げて一度だけやり直す。
+        print(f"  {name}: 区画内で0件。サイト全体で再試行します", flush=True)
+        return harvest(pref, name, base, cache, force_whole=True)
     print(f"  {name}: {fetched}ページ取得 → 制度 {len(found)}件", flush=True)
     return found
 
